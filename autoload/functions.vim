@@ -20,3 +20,13 @@ function! functions#plaintext()
     autocmd BufWinLeave <buffer> call clearmatches()
   endif
 endfunction
+
+" Zap trailing whitespace.
+function! functions#zap() abort  
+  let l:pos=getcurpos()
+  let l:search=@/
+  keepjumps %substitute/\s\+$//e
+  let @/=l:search
+  nohlsearch
+  call setpos('.', l:pos)
+endfunction

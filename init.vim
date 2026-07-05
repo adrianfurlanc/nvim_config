@@ -74,7 +74,7 @@ call minpac#add('wincent/vcs-jump')                 " Jumps to changed/conflicte
 call minpac#add('xolox/vim-misc')                   " Required for vim-session
 
 " Packages to install
-" vim-session 
+" vim-session
 " ale linter
 
 command! PackUpdate call minpac#update()
@@ -199,12 +199,18 @@ endfunction
 " KEYBOARD MAPPINGS
 " ============================================================
 
-" NORMAL 
+" NORMAL
 
 " nnoremap <C-n> :NERDTreeToggle<CR>
 nnoremap <silent> - :silent edit <C-R>=empty(expand('%')) ? '.' : expand('%:p:h')<CR><CR>
 
 nnoremap <F5> :UndotreeToggle<CR>
+
+" Map the Enter key to repeat last macro
+nnoremap <Enter> @@
+
+" Repeat last macro if in a normal buffer.
+nnoremap <expr> <CR> empty(&buftype) ? '@@' : '<CR>'
 
 " Use <Leader>s instead of default <Leader>e:
 nmap <Leader>s <Plug>(Scalpel)
@@ -234,17 +240,27 @@ nnoremap <silent> <Right> :cnfile<CR>
 " Switch between last two files
 nnoremap <leader><leader> <c-^>
 
+" :only mapped to leader+o
+nnoremap <leader>o :only<cr>
+
+" «leader>p -- Show the path of the current file (mnemonic: path; useful when
+" you have a lot of splits and the status line gets truncated).
+nnoremap <Leader>p :echo expand('%:p:h') . '/'<CR>
+
 " Edit vimrc in new buffer
 nnoremap <leader>mv :edit $MYVIMRC<CR>
 
 " Clears the search register
 nnoremap <Leader>/ :nohlsearch<CR>
 
-" :only mapped to leader+o
-nnoremap <Leader>o :only<CR>
+nnoremap <silent> <Leader>zz :call functions#zap()<CR>
+
 
 " Delete Trailing Whitespace
 nnoremap _$ :call Preserve("%s/\\s\\+$//e")<CR>
+
+" Use \+e to edit a new file in the same directory as the current buffer
+nnoremap <LocalLeader>e :edit <C-R>=expand('%:p:h') . '/'<CR>
 
 " Auto Indent File
 nnoremap _= :call Preserve("normal gg=G")<CR>
@@ -302,7 +318,7 @@ nmap <leader>et :tabe %%
 nnoremap <silent> <Leader>r :call Cycle_numbering()<CR>
 
 
-" VISUAL 
+" VISUAL
 " Visual shifting (does not exit Visual mode)
 vnoremap < <gv
 vnoremap > >gv
@@ -310,9 +326,15 @@ vnoremap > >gv
 " Move several lines around within Visual Mode
 vmap <C-Up> [egv
 vmap <C-Down> ]egv
- 
 
-" COMMAND 
+" Visual mode mappings.
+xnoremap <C-h> <C-w>h
+xnoremap <C-]> <C-w>]
+xnoremap <C-k> <C-w>k
+xnoremap <C-l> <C-w>l
+
+
+" COMMAND
 " w!! to write a file as sudo
 cnoremap w!! w !sudo tee % >/dev/null
 
@@ -321,9 +343,14 @@ cnoremap %% <C-R>=fnameescape(expand('%:h')).'/'<cr>
 
 " Change Working Directory to that of the current file
 cnoremap cd. lcd %:p:h
- 
 
-" VISUAL (xnoremap) 
+
+" Command mode mappings.
+cnoremap <C-a> <Home>
+cnoremap <C-e> <End>
+
+
+" VISUAL (xnoremap)
 " Make dot work over visual line selections
 xnoremap . :norm.<CR>
 
@@ -334,14 +361,14 @@ xnoremap <C-l> <C-w>l
 
 " Execute a macro over visual line selections
 xnoremap Q :'<,'>:normal @q<CR>
- 
+
 
 
 " ============================================================
 " PLUGIN CONFIGURATION
 " ============================================================
 
-" ALE 
+" ALE
 let g:jsx_ext_required = 0
 
 let g:ale_linters = {
@@ -356,41 +383,41 @@ let g:ale_fixers = {
 
 let g:ale_lint_on_save = 1
 let g:ale_lint_on_text_changed = 0
- 
 
- 
 
-" Closetag / DelimitMate 
+
+
+" Closetag / DelimitMate
 " let g:closetag_filenames = '*.html,*.xhtml,*.phtml'
 " let g:closetag_xhtml_filenames = '*.xhtml,*.jsx'
 let delimitMate_matchpairs = "(:),[:],{:}"
 
-" Grepper 
+" Grepper
 let g:grepper = {}
 let g:grepper.tools = ['rg', 'grep', 'git']
 let g:grepper.rg={'grepprg': 'rg -H --no-heading --vimgrep'}
 
 nnoremap <Leader>g :Grepper -tool rg<CR>
- 
-" Tells the vim-devicons plugin to add Unicode folder icons (📁-style glyphs from a Nerd Font) to directory nodes in NERDTree, so folders are visually distinguishable from files. 
+
+" Tells the vim-devicons plugin to add Unicode folder icons (📁-style glyphs from a Nerd Font) to directory nodes in NERDTree, so folders are visually distinguishable from files.
 let g:WebDevIconsUnicodeDecorateFolderNodes = 1
 
-" Rainbow 
+" Rainbow
 let g:rainbow_active = 1
- 
 
-" Session 
+
+" Session
 let g:session_autosave='no'
 let g:session_autoload='no'
 let g:session_command_aliases = 1
 let g:session_directory='~/.config/nvim/sessions'
- 
 
-" Sneak 
+
+" Sneak
 let g:sneak#s_next = 1
- 
 
-" SuperTab 
+
+" SuperTab
 let g:SuperTabDefaultCompletionType = "context"
 let g:SuperTabLongestEnhanced = 1
 let g:SuperTabDefaultCompletionTypeDiscovery = [
@@ -399,19 +426,19 @@ let g:SuperTabDefaultCompletionTypeDiscovery = [
 			\ ]
 let g:SuperTabLongestHighlight = 1
 let g:SuperTabClosePreviewOnPopupClose = 1
- 
 
-" Tagbar 
+
+" Tagbar
 let g:tagbar_compact = 1
- 
 
-" Ultisnips 
+
+" Ultisnips
 " let g:UltiSnipsExpandTrigger="<tab>"
 " let g:UltiSnipsJumpForwardTrigger="<tab>"
 " let g:UltiSnipsJumpBackwardTrigger="<s-tab>"
- 
 
-" Lightline 
+
+" Lightline
 let g:lightline = {
 			\ 'colorscheme': 'gruvbox',
 			\ 'active': {
@@ -566,7 +593,7 @@ augroup LightlineGitStatus
 	autocmd BufReadPost,BufWritePost,FocusGained * call UpdateGitStatus()
 	autocmd User FugitiveChanged call UpdateGitStatus()
 augroup END
- 
+
 
 
 " ============================================================
@@ -647,7 +674,7 @@ autocmd user fugitive
 autocmd BufReadPost fugitive://* set bufhidden=delete
 
 " ====Claude Code===
-" claudecode.nvim 
+" claudecode.nvim
 lua << EOF
 require("claudecode").setup({
   terminal = {
