@@ -7,9 +7,6 @@
 " PACKAGE MANAGEMENT
 " ============================================================
 
-set runtimepath^=~/.vim runtimepath+=~/.vim/after
-let &packpath = &runtimepath
-
 " If FZF installed using git
 set rtp+=~/.fzf
 
@@ -22,6 +19,7 @@ call minpac#add('bling/vim-bufferline')             " View open buffers in cmd b
 call minpac#add('blueyed/vim-diminactive')          " Dim inactive buffer in vim
 call minpac#add('brooth/far.vim')                   " Find and replace across multiple files with a preview window
 call minpac#add('christoomey/vim-tmux-navigator')   " Easier (tmux - vim) navigation
+call minpac#add('coder/claudecode.nvim')            " Claude Code integration for Neovim
 call minpac#add('cocopon/lightline-hybrid.vim')     " Hybrid theme for lightline
 call minpac#add('edkolev/tmuxline.vim')             " Create tmux line from lightline theme
 call minpac#add('ervandew/supertab')                " Complete with <Tab>
@@ -60,6 +58,7 @@ call minpac#add('tpope/vim-commentary')             " Toggle comments in vim
 call minpac#add('tpope/vim-dispatch', {'type':'opt'}) " Asynchronous build and test dispatcher — runs jobs in the background
 call minpac#add('tpope/vim-eunuch')                 " Helpers for unix
 call minpac#add('tpope/vim-fugitive')               " Vim wrapper for git
+call minpac#add('tpope/vim-rhubarb')                " GitHub :GBrowse handler for vim-fugitive
 call minpac#add('tpope/vim-repeat')                 " Allow plugins to repeat
 call minpac#add('tpope/vim-surround')               " Add/Change surround characters
 call minpac#add('tpope/vim-unimpaired')             " Provides several pair
@@ -156,7 +155,7 @@ set t_CO=256
 set tildeop
 set title
 set ttimeoutlen=50
-set undodir=~/.vim/undodir
+set undodir=~/.config/nvim/undodir
 set undofile
 set undolevels=1000
 set virtualedit=block
@@ -384,7 +383,7 @@ let g:rainbow_active = 1
 let g:session_autosave='no'
 let g:session_autoload='no'
 let g:session_command_aliases = 1
-let g:session_directory='~/.vim/sessions'
+let g:session_directory='~/.config/nvim/sessions'
  
 
 " Sneak 
@@ -471,6 +470,38 @@ let g:lightline#ale#indicator_checking = "  "
 let g:lightline#ale#indicator_warnings = " "
 let g:lightline#ale#indicator_errors   = " "
 
+" The gruvbox lightline theme (lightline-gruvbox.vim) uses gray statusline
+" text; brighten it to gruvbox's normal foreground (fg1, a warm off-white).
+" The theme is a plugin file sourced AFTER init.vim, so the palette can
+" only be patched on VimEnter, followed by a lightline re-init (the method
+" from lightline's FAQ). Palette entries are [guifg, guibg, ctermfg,
+" ctermbg]; the mode block (left[0]) keeps its dark-on-color text.
+let s:statusline_fg   = '#ebdbb2'
+let s:statusline_ctfg = 223
+function! s:LightlineWhiteText() abort
+	let palette = g:lightline#colorscheme#gruvbox#palette
+	for mode in ['normal', 'insert', 'visual', 'replace']
+		if has_key(palette, mode) && has_key(palette[mode], 'left') && len(palette[mode].left) > 1
+			let palette[mode].left[1][0] = s:statusline_fg
+			let palette[mode].left[1][2] = s:statusline_ctfg
+		endif
+	endfor
+	let palette.normal.middle[0][0] = s:statusline_fg
+	let palette.normal.middle[0][2] = s:statusline_ctfg
+	for section in palette.normal.right
+		let section[0] = s:statusline_fg
+		let section[2] = s:statusline_ctfg
+	endfor
+	call lightline#init()
+	call lightline#colorscheme()
+	call lightline#update()
+endfunction
+
+augroup LightlineWhiteText
+	autocmd!
+	autocmd VimEnter * call s:LightlineWhiteText()
+augroup END
+
 function! MyFiletype()
 	return winwidth(0) > 70 ? (strlen(&filetype) ? &filetype . ' ' . WebDevIconsGetFileTypeSymbol() : 'no ft') : ''
 endfunction
@@ -488,16 +519,53 @@ function! LightlineFileformat()
 endfunction
 
 function! LightlineFugitive()
-	try
-		if expand('%:t') !~? 'Tagbar\|Gundo\|NERD' && &ft !~? 'vimfiler' && exists('*fugitive#head')
-			let mark = '' 
-			let branch = fugitive#head()
-			return branch !=# '' ? mark.branch : ''
-		endif
-	catch
-	endtry
-	return ''
+	if expand('%:t') =~? 'Tagbar\|Gundo\|NERD' || &ft =~? 'vimfiler'
+		return ''
+	endif
+	let branch = exists('*FugitiveHead') ? FugitiveHead() : ''
+	if branch ==# ''
+		return ''
+	endif
+	let mark = ' '
+	return mark . branch . get(b:, 'lightline_git_status', '')
 endfunction
+
+" Cache the current file's git state as a statusline suffix:
+" '' (tracked & clean), ' [untracked]', ' [staged]', ' [modified]',
+" or ' [staged,modified]'. Parsed from the two-column XY code of
+" git status --porcelain (X = index, Y = worktree). Cached per buffer
+" because the statusline redraws far too often to shell out each time.
+function! UpdateGitStatus() abort
+	let b:lightline_git_status = ''
+	let path = expand('%:p')
+	if empty(path) || !filereadable(path) || !exists('*FugitiveGitDir') || empty(FugitiveGitDir())
+		return
+	endif
+	let out = system('git -C ' . shellescape(expand('%:p:h')) . ' status --porcelain -- ' . shellescape(path))
+	if v:shell_error || empty(out)
+		return
+	endif
+	if out[0] ==# '?'
+		let b:lightline_git_status = ' [untracked]'
+		return
+	endif
+	let parts = []
+	if out[0] !=# ' '
+		call add(parts, 'staged')
+	endif
+	if out[1] !=# ' '
+		call add(parts, 'modified')
+	endif
+	if !empty(parts)
+		let b:lightline_git_status = ' [' . join(parts, ',') . ']'
+	endif
+endfunction
+
+augroup LightlineGitStatus
+	autocmd!
+	autocmd BufReadPost,BufWritePost,FocusGained * call UpdateGitStatus()
+	autocmd User FugitiveChanged call UpdateGitStatus()
+augroup END
  
 
 
