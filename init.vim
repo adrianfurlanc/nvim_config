@@ -476,8 +476,8 @@ let g:lightline#ale#indicator_errors   = " "
 " only be patched on VimEnter, followed by a lightline re-init (the method
 " from lightline's FAQ). Palette entries are [guifg, guibg, ctermfg,
 " ctermbg]; the mode block (left[0]) keeps its dark-on-color text.
-let s:statusline_fg   = '#ebdbb2'
-let s:statusline_ctfg = 223
+let s:statusline_fg   = '#d5c4a1'
+let s:statusline_ctfg = 250
 function! s:LightlineWhiteText() abort
 	let palette = g:lightline#colorscheme#gruvbox#palette
 	for mode in ['normal', 'insert', 'visual', 'replace']
