@@ -176,6 +176,13 @@ hi Search ctermfg=red
 hi Comment gui=italic cterm=italic
 hi ColorColumn ctermbg=237
 
+" Bright cursor for contrast against the dark background, in every mode:
+" block in normal/visual, thin bar in insert, underline in replace and
+" operator-pending. All use the Cursor group below (nvim relays the color
+" to the terminal).
+hi Cursor guifg=#282828 guibg=#ebdbb2 ctermfg=235 ctermbg=223
+set guicursor=n-v-c-sm:block-Cursor,i-ci-ve:ver25-Cursor,r-cr-o:hor20-Cursor
+
 let g:gruvbox_italic=1
 let g:oceanic_next_terminal_italic = 1
 
@@ -259,7 +266,7 @@ nnoremap <silent> <Leader>zz :call functions#zap()<CR>
 " Delete Trailing Whitespace
 nnoremap _$ :call Preserve("%s/\\s\\+$//e")<CR>
 
-" Use \+e to edit a new file in the same directory as the current buffer
+" Use \+e to edit a of the current file
 nnoremap <LocalLeader>e :edit <C-R>=expand('%:p:h') . '/'<CR>
 
 " Auto Indent File
