@@ -133,6 +133,7 @@ set nostartofline
 set noswapfile
 set nrformats=
 set number
+set cursorline
 " set relativenumber
 set pastetoggle=<Leader>z
 set report=0
@@ -214,10 +215,10 @@ nnoremap <silent> - :silent edit <C-R>=empty(expand('%')) ? '.' : expand('%:p:h'
 nnoremap <F5> :UndotreeToggle<CR>
 
 " Map the Enter key to repeat last macro
-nnoremap <Enter> @@
+" nnoremap <Enter> @@
 
-" Repeat last macro if in a normal buffer.
-nnoremap <expr> <CR> empty(&buftype) ? '@@' : '<CR>'
+" Replay last recorded macro if in a normal buffer.
+nnoremap <expr> <CR> (empty(&buftype) && !empty(reg_recorded())) ? '@' . reg_recorded() : '<CR>'
 
 " Use <Leader>s instead of default <Leader>e:
 nmap <Leader>s <Plug>(Scalpel)
@@ -394,6 +395,13 @@ let g:ale_lint_on_text_changed = 0
 
 
 
+" Bufferline
+" Don't echo the buffer list to the command bar: its CursorHold echo
+" (firing after 'updatetime', which polyglot silently lowers to 300ms)
+" overwrites any command-line output, e.g. :messages.
+let g:bufferline_echo = 0
+
+
 " Closetag / DelimitMate
 " let g:closetag_filenames = '*.html,*.xhtml,*.phtml'
 " let g:closetag_xhtml_filenames = '*.xhtml,*.jsx'
@@ -450,7 +458,8 @@ let g:lightline = {
 			\ 'colorscheme': 'gruvbox',
 			\ 'active': {
 			\   'left': [ [ 'mode', 'paste' ],
-			\             [ 'fugitive', 'realpath', 'readonly', 'modified', ] ],
+			\             [ 'fugitive', 'realpath', 'readonly', 'modified', ],
+			\             [ 'bufferline' ] ],
 			\ 'right': [ [ 'linter_checking', 'linter_errors', 'linter_warnings', 'lineinfo' ],
 			\              [ 'percent' ],
 			\              [ 'fileformat', 'tagbar', 'filetype', ]]
@@ -459,6 +468,7 @@ let g:lightline = {
 			\ 'component': {
 			\         'tagbar': '%{tagbar#currenttag("%s", "", "f")}',
 			\         'realpath': '%f',
+			\         'bufferline': '%{bufferline#refresh_status()}%{g:bufferline_status_info.before . g:bufferline_status_info.current . g:bufferline_status_info.after}',
 			\ },
 			\
 			\ 'component_expand': {

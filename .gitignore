@@ -1,0 +1,6 @@
+.DS_Store
+init without comments.vim
+init-old.vim
+pack/
+undodir/
+sessions/
