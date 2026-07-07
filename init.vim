@@ -91,82 +91,100 @@ colorscheme gruvbox
 set background=dark
 set termguicolors
 
+" Darker background for the active split, lighter for inactive ones
+" (Normal = current window, NormalNC = non-current windows).
+" Re-applied on ColorScheme so switching themes doesn't wipe it.
+function! s:DimInactiveWindows() abort
+	highlight Normal   guibg=#1d2021
+	highlight NormalNC guibg=#32302f
+endfunction
+call s:DimInactiveWindows()
+augroup ActiveWindowBackground
+	autocmd!
+	autocmd ColorScheme * call s:DimInactiveWindows()
+augroup END
+
 set encoding=utf-8
 
 set autoindent
-set backspace=indent,eol,start
-set breakindent
-set clipboard=unnamed
-set copyindent
-set diffopt=vertical
-set diffopt+=iwhite
-set encoding=utf-8 nobomb
-set exrc
-set fileformats=unix,dos
-set fillchars=vert:│
-set fillchars+=fold:·
-set foldlevelstart=99
-set foldmethod=marker
-set foldtext=Foldtext()
-set formatoptions+=j
-set gdefault
-" set gfn=Sauce\ Code\ Pro\ Medium\ Nerd\ Font\ Complete:h14
-set guifont=Sauce\ Code\ Pro\ Medium\ Nerd\ Font\ Complete:h14
-set hidden
-set history=1000
-set hlsearch
-set ignorecase
-set incsearch
-set infercase
-set laststatus=2
-set lazyredraw
-set linebreak
-set listchars=tab:▸\ ,eol:¬,trail:·
-set magic
-set modeline
-set modelines=2
-set nobackup
-set noeol
-set noerrorbells
-set noshowmode
-set nostartofline
-set noswapfile
-set nrformats=
-set number
-set cursorline
-" set relativenumber
-set pastetoggle=<Leader>z
-set report=0
-set ruler
-set scrolloff=40
-set secure
-set shiftwidth=4
-set tabstop=4
-set shortmess+=A
-set shortmess+=I
-set showcmd
-set showbreak=\\\\
-set showmatch
-set smartcase
-set splitbelow
-set splitright
-set switchbuf=usetab
-set synmaxcol=200
-set t_CO=256
-set tildeop
-set title
-set ttimeoutlen=50
-set undodir=~/.config/nvim/undodir
-set undofile
-set undolevels=1000
-set virtualedit=block
-set visualbell
-set whichwrap=b,s,h,l,<,>,[,]
-set wildignore=*.swp,*.bak,*.pyc,*.class,*.pdf,*.zip,*.mkv,*.mp4,*.mp3
-set wildmenu
-set wildmode=list:full
-set wrap
-setlocal keywordprg=:help
+
+if has('linebreak')
+	  let &showbreak='⤷ '                 " ARROW POINTING DOWNWARDS THEN CURVING RIGHTWARDS (U+2937, UTF-8: E2 A4 B7)
+  endif
+
+set backspace=indent,eol,start                      " Backspace over indent, line breaks and insert start
+set breakindent                                     " Indent wrapped lines to match line start
+set clipboard=unnamed                               " Yank and paste with the system clipboard
+set copyindent                                      " Reuse existing indent characters on autoindent
+set diffopt=vertical                                " Open diffs in vertical splits
+set diffopt+=iwhite                                 " Ignore whitespace changes in diffs
+set encoding=utf-8 nobomb                           " UTF-8 without a byte order mark
+set exrc                                            " Read project-local .nvimrc/.exrc (restricted by 'secure')
+set fileformats=unix,dos                            " Prefer unix (LF) line endings, then dos (CRLF)
+set formatoptions+=n                                " Recognize numbered lists when formatting
+set foldlevelstart=99                               " Start with all folds open
+set foldtext=Foldtext()                             " Custom fold summary line (function below)
+set formatoptions+=j                                " Remove comment leader when joining lines
+set gdefault                                        " Substitute all matches per line by default
+set guifont=Sauce\ Code\ Pro\ Medium\ Nerd\ Font\ Complete:h14 " Font for GUI clients
+set hidden                                          " Switch buffers without saving first
+set history=1000                                    " Remember 1000 command-line entries
+set hlsearch                                        " Highlight search matches
+set ignorecase                                      " Case-insensitive searching...
+set incsearch                                       " Show matches while typing a search
+set infercase                                       " Match case of typed text in completion
+set laststatus=2                                    " Always show the statusline
+set lazyredraw                                      " Don't redraw mid-macro
+set linebreak                                       " Wrap lines at word boundaries
+set listchars=tab:▸\ ,eol:¬,trail:·                 " Symbols for tab, eol and trailing spaces
+set magic                                           " Standard regex special characters
+set modeline                                        " Honor modelines in files
+set modelines=2                                     " Look for modelines in first/last 2 lines
+set nobackup                                        " No backup files
+set noeol                                           " Don't force a trailing newline on write
+set noerrorbells                                    " No beep on errors
+set noshowmode                                      " Hide mode message (lightline shows it)
+set nostartofline                                   " Keep cursor column on jumps
+set noswapfile                                      " No swap files
+set nrformats=                                      " Treat all numbers as decimal for CTRL-A/X
+set number                                          " Show line numbers
+set cursorline                                      " Highlight the current line
+set report=0                                        " Always report how many lines changed
+set ruler                                           " Show cursor position in the statusline
+set scrolloff=40                                    " Keep 40 lines visible around the cursor
+set secure                                          " Restrict unsafe commands in exrc files
+set shiftwidth=4                                    " Indent with 4 spaces
+set tabstop=4                                       " Display tabs as 4 spaces
+set shortmess+=A                                    " No swapfile-exists warning
+set shortmess+=I                                    " No intro screen on startup
+set showcmd                                         " Show pending command keys
+set showbreak=\\\\                                  " Wrapped-line prefix (overridden by '⤷ ')
+set showmatch                                       " Briefly jump to the matching bracket
+set sidescrolloff=3                                 " Same as scrolloff, but for columns
+set smartcase                                       " ...unless the pattern has uppercase
+set splitbelow                                      " Open horizontal splits below
+set splitright                                      " Open vertical splits to the right
+set switchbuf=usetab                                " Reuse windows/tabs already showing the buffer
+set synmaxcol=200                                   " Only syntax-highlight the first 200 columns
+set t_CO=256                                        " 256-color terminal
+set tildeop                                         " Make ~ (toggle case) work as an operator
+set title                                           " Set the terminal window title
+set ttimeoutlen=50                                  " 50ms key-code timeout (fast Esc)
+set undodir=~/.config/nvim/undodir                  " Where undo history is stored
+set undofile                                        " Persist undo history across sessions
+set undolevels=1000                                 " Keep 1000 undo levels
+set virtualedit=block                               " Free cursor movement in visual block mode
+set visualbell                                      " Flash instead of beeping
+set whichwrap=b,s,h,l,<,>,[,]                       " Let these keys move across line breaks
+set wildignore=*.swp,*.bak,*.pyc,*.class,*.pdf,*.zip,*.mkv,*.mp4,*.mp3 " Files to ignore in completion
+set wildmenu                                        " Command-line completion menu
+set wildmode=list:full                              " List all matches, complete first match
+set wrap                                            " Soft-wrap long lines
+setlocal keywordprg=:help                           " K looks up the word under cursor with :help
+
+" Commented out settings
+" set gfn=Sauce\ Code\ Pro\ Medium\ Nerd\ Font\ Complete:h14 " GUI font (abbreviated form of guifont)
+
 
 " Syntax highlighting
 hi clear SignColumn
@@ -181,7 +199,18 @@ hi ColorColumn ctermbg=237
 " block in normal/visual, thin bar in insert, underline in replace and
 " operator-pending. All use the Cursor group below (nvim relays the color
 " to the terminal).
-hi Cursor guifg=#282828 guibg=#ebdbb2 ctermfg=235 ctermbg=223
+" gui=NONE/cterm=NONE is required: gruvbox defines Cursor as `inverse`, and
+" :hi merges arguments, so without clearing that attribute the fg/bg here
+" get swapped at render time. Re-applied on ColorScheme because switching
+" themes restores the inverse version.
+function! s:LightCursor() abort
+	hi Cursor gui=NONE cterm=NONE guifg=#282828 guibg=#ebdbb2 ctermfg=235 ctermbg=223
+endfunction
+call s:LightCursor()
+augroup CursorColors
+	autocmd!
+	autocmd ColorScheme * call s:LightCursor()
+augroup END
 set guicursor=n-v-c-sm:block-Cursor,i-ci-ve:ver25-Cursor,r-cr-o:hor20-Cursor
 
 let g:gruvbox_italic=1
@@ -209,15 +238,13 @@ endfunction
 
 " NORMAL
 
-" nnoremap <C-n> :NERDTreeToggle<CR>
+if exists('&belloff')
+  set belloff=all
+endif
+
+" Behave like vim-vinegar. Entering NERDTree on the parent folder
 nnoremap <silent> - :silent edit <C-R>=empty(expand('%')) ? '.' : expand('%:p:h')<CR><CR>
 
-nnoremap <F5> :UndotreeToggle<CR>
-
-" Map the Enter key to repeat last macro
-" nnoremap <Enter> @@
-
-" Replay last recorded macro if in a normal buffer.
 nnoremap <expr> <CR> (empty(&buftype) && !empty(reg_recorded())) ? '@' . reg_recorded() : '<CR>'
 
 " Use <Leader>s instead of default <Leader>e:
@@ -262,6 +289,18 @@ nnoremap <leader>mv :edit $MYVIMRC<CR>
 nnoremap <Leader>/ :nohlsearch<CR>
 
 nnoremap <silent> <Leader>zz :call functions#zap()<CR>
+
+if has ('linebreak')
+:d
+set breakindent " indent wrapped lines to match start
+	if exists ('&breakindentopt')
+		set breakindentopt=shift:2 " emphasize broken lines by indenting them
+	endif
+endif
+
+if has('linebreak')
+  let &showbreak='⤷ '                 " ARROW POINTING DOWNWARDS THEN CURVING RIGHTWARDS (U+2937, UTF-8: E2 A4 B7)
+endif
 
 
 " Delete Trailing Whitespace
@@ -519,7 +558,9 @@ let g:lightline#ale#indicator_errors   = " "
 " The theme is a plugin file sourced AFTER init.vim, so the palette can
 " only be patched on VimEnter, followed by a lightline re-init (the method
 " from lightline's FAQ). Palette entries are [guifg, guibg, ctermfg,
-" ctermbg]; the mode block (left[0]) keeps its dark-on-color text.
+" ctermbg]. The mode block (left[0]) keeps its dark-on-color text, and the
+" right side (percent, line:col) keeps the theme's dark-on-gray text to
+" match the tmux statusbar.
 let s:statusline_fg   = '#d5c4a1'
 let s:statusline_ctfg = 250
 function! s:LightlineWhiteText() abort
@@ -532,10 +573,6 @@ function! s:LightlineWhiteText() abort
 	endfor
 	let palette.normal.middle[0][0] = s:statusline_fg
 	let palette.normal.middle[0][2] = s:statusline_ctfg
-	for section in palette.normal.right
-		let section[0] = s:statusline_fg
-		let section[2] = s:statusline_ctfg
-	endfor
 	call lightline#init()
 	call lightline#colorscheme()
 	call lightline#update()
