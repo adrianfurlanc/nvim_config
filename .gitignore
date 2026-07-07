@@ -1,6 +1,7 @@
 .DS_Store
 init without comments.vim
 init-old.vim
+*.un~
 pack/
 undodir/
 sessions/
