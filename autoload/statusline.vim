@@ -6,7 +6,7 @@ function! statusline#filetype() abort
 endfunction
 
 function! statusline#readonly() abort
-	return &readonly && &filetype !=# 'help' ? ' ' : ''
+	return &readonly && &filetype !=# 'help' ? ' ' : ''
 endfunction
 
 function! statusline#modified() abort
@@ -25,7 +25,7 @@ function! statusline#fugitive() abort
 	if branch ==# ''
 		return ''
 	endif
-	let mark = ' '
+	let mark = ' '
 	return mark . branch . get(b:, 'lightline_git_status', '')
 endfunction
 

@@ -25,7 +25,8 @@ command! PackClean  call pack#clean()
 
 " Colorscheme. The italics flags must be set before the scheme is sourced,
 " and 'background' before :colorscheme — setting it afterwards makes Vim
-" source the whole colorscheme a second time.
+" source the whole colorscheme a second time. Gruvbox is the default;
+" markdown buffers switch to OceanicNext (see plugin/color.vim).
 let g:gruvbox_italic = 1
 let g:oceanic_next_terminal_italic = 1
 set termguicolors

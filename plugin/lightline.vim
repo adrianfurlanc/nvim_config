@@ -52,13 +52,13 @@ let g:lightline.mode_map = {
 			\ "\<C-s>" : 'S-B',
 			\}
 
-let g:lightline.separator    = { 'left': '', 'right': '' }
-let g:lightline.subseparator = { 'left': '', 'right': '' }
+let g:lightline.separator    = { 'left': '', 'right': '' }
+let g:lightline.subseparator = { 'left': '', 'right': '' }
 " let g:lightline.colorscheme  = 'gruvbox'
 
 let g:lightline#ale#indicator_checking = "  "
-let g:lightline#ale#indicator_warnings = " "
-let g:lightline#ale#indicator_errors   = " "
+let g:lightline#ale#indicator_warnings = " "
+let g:lightline#ale#indicator_errors   = " "
 
 " Brighten the gray statusline text of the gruvbox lightline theme
 " (see statusline#brighten for the full story).
