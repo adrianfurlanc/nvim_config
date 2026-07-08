@@ -101,8 +101,8 @@ nmap [] k$][%?}<CR>
 nmap <Leader>c gcc
 
 " Move lines around
-nmap <C-Up> [e
-nmap <C-Down> ]e
+nnoremap <silent> <C-Up> :<C-u>call mappings#normal#move_up()<CR>
+nnoremap <silent> <C-Down> :<C-u>call mappings#normal#move_down()<CR>
 
 " Open files in same directory as current file
 nmap <leader>ew :e %%
@@ -124,10 +124,6 @@ nnoremap <silent> <Leader>m :execute (exists('g:loaded_matchparen') ? 'No' : 'Do
 " Visual shifting (does not exit Visual mode)
 vnoremap < <gv
 vnoremap > >gv
-
-" Move several lines around within Visual Mode
-vmap <C-Up> [egv
-vmap <C-Down> ]egv
 
 " Make dot work over visual line selections
 xnoremap . :norm.<CR>
