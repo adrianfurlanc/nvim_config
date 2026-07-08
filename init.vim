@@ -32,3 +32,6 @@ let g:oceanic_next_terminal_italic = 1
 set termguicolors
 set background=dark
 colorscheme gruvbox
+
+
+source $VIMRUNTIME/macros/matchit.vim

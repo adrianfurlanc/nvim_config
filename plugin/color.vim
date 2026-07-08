@@ -56,9 +56,27 @@ hi clear SignColumn
 hi DiffAdd ctermbg=White ctermfg=Green
 hi DiffDelete ctermbg=White ctermfg=Red
 hi DiffChange ctermbg=White ctermfg=Cyan
-hi Search ctermfg=red
 hi Comment gui=italic cterm=italic
 hi ColorColumn ctermbg=237
+
+" Search matches: the match under the cursor (CurSearch) keeps the scheme's
+" default reverse-video Search look; every other match is drawn as red
+" underlined text on the plain background. Re-applied on ColorScheme because
+" switching themes (gruvbox <-> OceanicNext) resets both groups.
+function! s:SearchColors() abort
+	if get(g:, 'colors_name', '') ==# 'OceanicNext'
+		highlight CurSearch gui=reverse cterm=reverse guifg=#fac863 guibg=#1b2b34 ctermfg=221 ctermbg=235
+		highlight Search gui=underline cterm=underline guifg=#ec5f67 guibg=NONE ctermfg=203 ctermbg=NONE
+	else
+		highlight CurSearch gui=reverse cterm=reverse guifg=#fabd2f guibg=#282828 ctermfg=214 ctermbg=235
+		highlight Search gui=underline cterm=underline guifg=#fb4934 guibg=NONE ctermfg=167 ctermbg=NONE
+	endif
+endfunction
+call s:SearchColors()
+augroup SearchColors
+	autocmd!
+	autocmd ColorScheme * call s:SearchColors()
+augroup END
 
 " Bright cursor for contrast against the dark background, in every mode:
 " block in normal/visual, thin bar in insert, underline in replace and
