@@ -113,6 +113,11 @@ nmap <leader>et :tabe %%
 " Cycle through line numbering modes
 nnoremap <silent> <Leader>r :call functions#cycle_numbering()<CR>
 
+" Stop annoying paren match highlighting from flashing all over the screen,
+" or start it.
+"
+" (mnemonic: [m]atch paren)
+nnoremap <silent> <Leader>m :execute (exists('g:loaded_matchparen') ? 'No' : 'Do') . 'MatchParen'<CR>
 
 " VISUAL
 

@@ -19,6 +19,7 @@ function! s:init() abort
 	call minpac#add('ervandew/supertab')                " Complete with <Tab>
 	call minpac#add('honza/vim-snippets')               " Default snippet definitions for vim-snipmate and UltiSnips
 	call minpac#add('itchyny/lightline.vim')            " Light and configurable statusline/tabline plugin
+	call minpac#add('Yggdroot/indentLine')              " Display thin vertical lines at each indentation level for code indented with spaces 
 	call minpac#add('janko-m/vim-test')                 " Run tests for multiple languages/frameworks directly from Vim
 	call minpac#add('junegunn/fzf.vim')                 " Use FZF for searching buffers, Ex commands, etc
 	call minpac#add('junegunn/vim-peekaboo')            " Extends \" / @ / CTRL-R to peek into registers and marks before using them
