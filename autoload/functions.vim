@@ -83,6 +83,74 @@ function! functions#load_nerdtree(...) abort
 	endif
 endfunction
 
+" Auto-clearing of the message area (see plugin/autocmds.vim).
+"
+" Anything echoed below the statusline stays on screen until something else
+" happens to overwrite it. The autocmds that produce such output call
+" functions#schedule_message_clear(), which blanks the area again after
+" 5 seconds. Two kinds of output are exempt and stay up until dismissed with
+" <Leader>L (see plugin/mappings.vim): errors, and :messages output.
+let s:message_timeout=5000
+let s:message_retry=1000
+let s:message_timer=-1
+let s:messages_command='\v^\s*mes%[sages]>'
+
+function! functions#clear_message_area(...) abort
+	" schedule_message_clear() blanked v:errmsg, so anything in it now came
+	" from the command this clear was scheduled for: leave the error on screen.
+	if v:errmsg !=# ''
+		let s:message_timer=-1
+		return
+	endif
+	if mode() ==# 'n'
+		echo ''
+		let s:message_timer=-1
+	else
+		" Echoing now would clobber an open cmdline, a press-enter prompt or
+		" the text being typed in insert mode ('noshowmode' means insert mode
+		" does not overwrite the message itself). Wait for normal mode.
+		let s:message_timer=timer_start(s:message_retry, function('functions#clear_message_area'))
+	endif
+endfunction
+
+function! functions#cancel_message_clear() abort
+	if s:message_timer != -1
+		call timer_stop(s:message_timer)
+		let s:message_timer=-1
+	endif
+endfunction
+
+function! functions#schedule_message_clear() abort
+	call functions#cancel_message_clear()
+	" v:errmsg is not cleared by a later successful command, so blank it now
+	" and read it back in the timer to tell 'this command errored' from 'an
+	" error some time ago'. Done here, not in the autocmd, so it covers the
+	" commands scheduled before they run and the yanks scheduled after.
+	let v:errmsg=''
+	let s:message_timer=timer_start(s:message_timeout, function('functions#clear_message_area'))
+endfunction
+
+" Clear the message area right now, whatever is in it: the error messages and
+" :messages output the timer deliberately leaves alone. 'redraw' is what
+" actually removes an error and restores the screen after the message area has
+" grown to more than one line.
+function! functions#clear_message_area_now() abort
+	call functions#cancel_message_clear()
+	let v:errmsg=''
+	echo ''
+	redraw
+endfunction
+
+function! functions#on_cmdline_leave() abort
+	if getcmdline() =~# s:messages_command
+		" Also cancel a clear left pending by an earlier command, which would
+		" otherwise wipe the :messages output part-way through reading it.
+		call functions#cancel_message_clear()
+	else
+		call functions#schedule_message_clear()
+	endif
+endfunction
+
 " Zap trailing whitespace.
 function! functions#zap() abort
   let l:pos=getcurpos()

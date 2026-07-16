@@ -53,6 +53,12 @@ nnoremap <leader>mv :edit $MYVIMRC<CR>
 " Clears the search register
 nnoremap <Leader>/ :nohlsearch<CR>
 
+" Dismiss whatever is in the message area: errors and :messages output, which
+" are the two things the 5s timer deliberately leaves on screen (see
+" plugin/autocmds.vim). <C-l> would do this in stock Vim, but is taken by
+" split navigation above.
+nnoremap <silent> <Leader>L :call functions#clear_message_area_now()<CR>
+
 " Zap trailing whitespace
 nnoremap <silent> <Leader>zz :call functions#zap()<CR>
 

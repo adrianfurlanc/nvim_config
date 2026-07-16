@@ -39,3 +39,14 @@ augroup end
 
 " Enable soft-wrapping for text files
 autocmd FileType text,markdown,html,xhtml,eruby setlocal wrap linebreak nolist
+
+" Blank the message area 5s after whatever printed into it: Ex command output
+" (:w and friends), search messages, and the yank/delete line counts that
+" 'report=0' asks for. Errors and :messages output are the exceptions and stay
+" up until dismissed with <Leader>L (see plugin/mappings.vim).
+augroup AutoClearMessages
+	autocmd!
+	autocmd CmdlineLeave : call functions#on_cmdline_leave()
+	autocmd CmdlineLeave [/?] call functions#schedule_message_clear()
+	autocmd TextYankPost * call functions#schedule_message_clear()
+augroup END
