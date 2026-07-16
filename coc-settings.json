@@ -1,0 +1,34 @@
+{
+	"diagnostic.virtualText": true,
+	"diagnostic.virtualTextCurrentLineOnly": false,
+	"prettier.documentSelectors": ["**/*.astro"],
+	"[astro]": {
+		"coc.preferences.formatOnSave": true
+	},
+	"diagnostic-languageserver.filetypes": {
+		"astro": "stylelint",
+		"css": "stylelint"
+	},
+	"diagnostic-languageserver.linters": {
+		"stylelint": {
+			"command": "./node_modules/.bin/stylelint",
+			"rootPatterns": [".stylelintrc.json", "package.json"],
+			"debounce": 200,
+			"args": ["--formatter", "json", "--stdin-filename", "%filepath"],
+			"isStdout": false,
+			"isStderr": true,
+			"sourceName": "stylelint",
+			"parseJson": {
+				"errorsRoot": "[0].warnings",
+				"line": "line",
+				"column": "column",
+				"message": "${text} [${rule}]",
+				"security": "severity"
+			},
+			"securities": {
+				"error": "error",
+				"warning": "warning"
+			}
+		}
+	}
+}

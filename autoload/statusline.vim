@@ -81,6 +81,11 @@ function! statusline#brighten() abort
 	endfor
 	let palette.normal.middle[0][0] = s:statusline_fg
 	let palette.normal.middle[0][2] = s:statusline_ctfg
+	" The gruvbox lightline theme ships no error/warning entries, so the typed
+	" coc_errors/coc_warnings segments would render with detached-looking
+	" fallback colors. Gruvbox red and yellow, dark text.
+	let palette.normal.error   = [[ '#282828', '#fb4934', 235, 167 ]]
+	let palette.normal.warning = [[ '#282828', '#fabd2f', 235, 214 ]]
 	call lightline#init()
 	call lightline#colorscheme()
 	call lightline#update()

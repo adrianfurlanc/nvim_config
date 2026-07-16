@@ -13,10 +13,10 @@ function! s:init() abort
 	call minpac#add('bling/vim-bufferline')             " View open buffers in cmd bar
 	call minpac#add('brooth/far.vim')                   " Find and replace across multiple files with a preview window
 	call minpac#add('christoomey/vim-tmux-navigator')   " Easier (tmux - vim) navigation
+	call minpac#add('neoclide/coc.nvim', {'branch': 'release'}) " Nodejs extension host for vim & neovim, load extensions like VSCode and host language servers. The release branch ships prebuilt — master needs a yarn build.
 	call minpac#add('coder/claudecode.nvim')            " Claude Code integration for Neovim
 	call minpac#add('cocopon/lightline-hybrid.vim')     " Hybrid theme for lightline
 	call minpac#add('edkolev/tmuxline.vim')             " Create tmux line from lightline theme
-	call minpac#add('ervandew/supertab')                " Complete with <Tab>
 	call minpac#add('honza/vim-snippets')               " Default snippet definitions for vim-snipmate and UltiSnips
 	call minpac#add('itchyny/lightline.vim')            " Light and configurable statusline/tabline plugin
 	call minpac#add('Yggdroot/indentLine')              " Display thin vertical lines at each indentation level for code indented with spaces 
@@ -30,7 +30,7 @@ function! s:init() abort
 	call minpac#add('machakann/vim-highlightedyank')    " Preview selected yanked text
 	call minpac#add('majutsushi/tagbar')                " A class outline viewer for Vim
 	call minpac#add('mattn/emmet-vim')                  " Emmet for web development
-	call minpac#add('maximbaz/lightline-ale')           " ALE linting indicators (errors/warnings) for lightline statusbar
+	call minpac#add('josa42/vim-lightline-coc')         " coc.nvim diagnostic indicators (errors/warnings) for lightline statusbar
 	call minpac#add('mhartington/oceanic-next')         " Neovim color scheme inspired by Oceanic Next for Sublime — cool blue/teal palette, supports true color, italics, and terminal transparency
 	call minpac#add('mhinz/vim-grepper')                " Async grep across multiple tools (rg, ag, git grep, etc.) with quickfix integration
 	call minpac#add('nelstrom/vim-visual-star-search')  " Use the star command with the visual mode selection and not the current word
@@ -61,6 +61,7 @@ function! s:init() abort
 	call minpac#add('Valloric/ListToggle')              " Toggles the quickfix list and location-list open/closed with simple keybindings
 	call minpac#add('wellle/targets.vim')               " Better vim text objects
 	" call minpac#add('w0rp/ale')                         " Asynchronous linter
+	call minpac#add('wuelnerdotexe/vim-astro')          " Astro filetype detection, syntax highlighting and indentation (.astro files)
 	call minpac#add('wincent/loupe')                    " Enhanced in-file search with smarter highlighting and sane defaults
 	call minpac#add('wincent/pinnacle')                 " Utility functions for tweaking and reading Vim highlight groups
 	call minpac#add('wincent/scalpel')

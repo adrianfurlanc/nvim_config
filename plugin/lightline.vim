@@ -11,7 +11,8 @@ let g:lightline = {
 			\   'left': [ [ 'mode', 'paste' ],
 			\             [ 'fugitive', 'realpath', 'readonly', 'modified', ],
 			\             [ 'bufferline' ] ],
-			\ 'right': [ [ 'linter_checking', 'linter_errors', 'linter_warnings', 'lineinfo' ],
+			\ 'right': [ [ 'lineinfo' ],
+			\              [ 'coc_errors', 'coc_warnings', 'coc_status' ],
 			\              [ 'percent' ],
 			\              [ 'fileformat', 'tagbar', 'filetype', ]]
 			\},
@@ -22,19 +23,6 @@ let g:lightline = {
 			\         'bufferline': '%{bufferline#refresh_status()}%{g:bufferline_status_info.before . g:bufferline_status_info.current . g:bufferline_status_info.after}',
 			\ },
 			\
-			\ 'component_expand': {
-			\  'linter_checking': 'lightline#ale#checking',
-			\  'linter_warnings': 'lightline#ale#warnings',
-			\  'linter_errors': 'lightline#ale#errors',
-			\  'linter_ok': 'lightline#ale#ok',
-			\ },
-			\
-			\ 'component_type' : {
-			\     'linter_checking': 'left',
-			\     'linter_warnings': 'warning',
-			\     'linter_errors': 'error',
-			\     'linter_ok': 'left',
-			\ },
 			\ 'component_function': {
 			\   'fugitive': 'statusline#fugitive',
 			\   'readonly': 'statusline#readonly',
@@ -61,9 +49,14 @@ let g:lightline.separator    = { 'left': '', 'right': '' }
 let g:lightline.subseparator = { 'left': '', 'right': '' }
 " let g:lightline.colorscheme  = 'gruvbox'
 
-let g:lightline#ale#indicator_checking = "  "
-let g:lightline#ale#indicator_warnings = " "
-let g:lightline#ale#indicator_errors   = " "
+let g:lightline#coc#indicator_warnings = "•"
+let g:lightline#coc#indicator_errors   = "×"
+
+" Fills in the coc_* entries of component_expand/component_type used by the
+" 'right' section above (the refresh autocmds live in the plugin itself).
+" Must run after the indicator variables are set — they are read when the
+" autoload file first loads.
+call lightline#coc#register()
 
 " Brighten the gray statusline text of the gruvbox lightline theme
 " (see statusline#brighten for the full story).
