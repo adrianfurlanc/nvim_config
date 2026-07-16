@@ -1,7 +1,12 @@
 " Lightline configuration. The component functions live in
 " autoload/statusline.vim so they are only loaded on first redraw.
+"
+" 'enable.tabline' is off because the tabline is rendered by
+" autoload/tabline.vim instead (see plugin/tabline.vim); lightline defaults it
+" to 1 and would otherwise clobber 'tabline' on init.
 let g:lightline = {
 			\ 'colorscheme': 'gruvbox',
+			\ 'enable': { 'statusline': 1, 'tabline': 0 },
 			\ 'active': {
 			\   'left': [ [ 'mode', 'paste' ],
 			\             [ 'fugitive', 'realpath', 'readonly', 'modified', ],
