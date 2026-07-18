@@ -24,7 +24,10 @@ return {
 	{ 'tpope/vim-unimpaired' },            -- Provides several pair
 	{ 'wellle/targets.vim' },              -- Better vim text objects
 	{ 'nelstrom/vim-visual-star-search' }, -- Use the star command with the visual mode selection and not the current word
-	{ 'artnez/vim-wipeout' },              -- Close all buffers & tabs
+	{
+		'artnez/vim-wipeout', -- Close all buffers & tabs
+		cmd = 'Wipeout',
+	},
 	{ 'qpkorr/vim-bufkill' },              -- Unload/delete/wipe buffers without closing the window or split
 	{ 'Valloric/ListToggle' },             -- Toggles the quickfix list and location-list open/closed with simple keybindings
 	{ 'junegunn/vim-peekaboo' },           -- Extends " / @ / CTRL-R to peek into registers and marks before using them

@@ -1,10 +1,17 @@
 return {
-	{ 'honza/vim-snippets' }, -- Default snippet definitions for vim-snipmate and UltiSnips
+	{
+		'honza/vim-snippets', -- Default snippet definitions for vim-snipmate and UltiSnips
+		-- Disabled: nothing reads these — no UltiSnips/snipmate, and
+		-- coc-snippets is not among the coc extensions. Re-enable if a
+		-- snippet engine arrives.
+		enabled = false,
+	},
 	{
 		'xolox/vim-misc', -- Required for vim-session
+		-- Disabled until vim-session is actually installed (add
+		-- xolox/vim-session here when it is, and restore the init below)
+		enabled = false,
 		init = function()
-			-- vim-session (not installed yet — add xolox/vim-session here when
-			-- it is)
 			vim.g.session_autosave = 'no'
 			vim.g.session_autoload = 'no'
 			vim.g.session_command_aliases = 1

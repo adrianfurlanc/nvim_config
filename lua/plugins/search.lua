@@ -1,20 +1,27 @@
 return {
 	{
 		'mhinz/vim-grepper', -- Async grep across multiple tools (rg, ag, git grep, etc.) with quickfix integration
+		cmd = { 'Grepper', 'GrepperRg', 'GrepperGrep', 'GrepperGit' },
+		-- Everything lives in init (not config) because the plugin is
+		-- lazy-loaded on its commands: the mapping and the :grep alias must
+		-- exist beforehand — running them hits the command stubs, which load
+		-- the plugin.
 		init = function()
 			vim.g.grepper = {
 				tools = { 'rg', 'grep', 'git' },
 				rg = { grepprg = 'rg -H --no-heading --vimgrep' },
 			}
-		end,
-		config = function()
+
 			vim.keymap.set('n', '<Leader>g', ':Grepper -tool rg<CR>')
 
 			-- Alias :grep to :GrepperGrep
 			require('functions').setup_command_alias('grep', 'GrepperGrep')
 		end,
 	},
-	{ 'brooth/far.vim' }, -- Find and replace across multiple files with a preview window
+	{
+		'brooth/far.vim', -- Find and replace across multiple files with a preview window
+		cmd = { 'Far', 'Farr', 'F', 'Fardo', 'Farundo', 'Refar' },
+	},
 	{
 		'wincent/loupe', -- Enhanced in-file search with smarter highlighting and sane defaults
 		init = function()

@@ -24,5 +24,8 @@ return {
 		end,
 	},
 	{ 'tpope/vim-rhubarb' }, -- GitHub :GBrowse handler for vim-fugitive
-	{ 'wincent/vcs-jump' },  -- Jumps to changed/conflicted hunks in a Git or Mercurial repo
+	{
+		'wincent/vcs-jump', -- Jumps to changed/conflicted hunks in a Git or Mercurial repo
+		cmd = 'VcsJump',
+	},
 }
