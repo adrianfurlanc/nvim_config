@@ -49,8 +49,8 @@ let g:lightline.separator    = { 'left': '', 'right': '' }
 let g:lightline.subseparator = { 'left': '', 'right': '' }
 " let g:lightline.colorscheme  = 'gruvbox'
 
-let g:lightline#coc#indicator_warnings = "•"
-let g:lightline#coc#indicator_errors   = "×"
+let g:lightline#coc#indicator_warnings = "W"
+let g:lightline#coc#indicator_errors   = "E"
 
 " Fills in the coc_* entries of component_expand/component_type used by the
 " 'right' section above (the refresh autocmds live in the plugin itself).
