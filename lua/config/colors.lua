@@ -1,7 +1,8 @@
 -- ============================================================
 -- Highlight and cursor tweaks
--- (the startup colorscheme is set in init.lua, before this runs;
--- the per-filetype switch lives at the bottom of this file)
+-- (the startup colorscheme is set in lua/plugins/colorscheme.lua,
+-- before this runs; the per-filetype switch lives at the bottom
+-- of this file)
 -- ============================================================
 
 -- NOTE: highlights below go through vim.cmd on purpose — :highlight merges

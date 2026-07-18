@@ -66,8 +66,8 @@ function M.setup_command_alias(input, output)
 		:format(input, input, output, input))
 end
 
--- Load the NERDTree opt package on first use (it costs ~40ms at startup,
--- mostly probing the clipboard and $PATH, so it is not in pack/*/start).
+-- Load NERDTree on first use (it costs ~40ms at startup, mostly probing the
+-- clipboard and $PATH, so it is marked lazy in lua/plugins/nerdtree.lua).
 -- With a directory argument, hands that buffer to NERDTree's netrw hijack —
 -- needed when the load is triggered by entering a directory buffer, because
 -- NERDTree's own BufEnter autocmd was not yet installed when it fired.
@@ -78,7 +78,7 @@ function M.load_nerdtree(dir)
 	-- NERDTree only removes netrw's directory-browse autocmds at VimEnter,
 	-- which has already passed; remove them here instead.
 	vim.cmd('silent! autocmd! FileExplorer')
-	vim.cmd.packadd('nerdtree')
+	require('lazy').load({ plugins = { 'nerdtree' } })
 	if dir and vim.fn.isdirectory(dir) == 1 then
 		vim.fn['nerdtree#checkForBrowse'](dir)
 	end

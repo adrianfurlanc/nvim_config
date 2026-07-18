@@ -53,6 +53,7 @@ vim.opt.splitbelow = true                           -- Open horizontal splits be
 vim.opt.splitright = true                           -- Open vertical splits to the right
 vim.opt.switchbuf = 'usetab'                        -- Reuse windows/tabs already showing the buffer
 vim.opt.synmaxcol = 200                             -- Only syntax-highlight the first 200 columns
+vim.opt.termguicolors = true                        -- 24-bit color in the terminal
 vim.opt.tildeop = true                              -- Make ~ (toggle case) work as an operator
 vim.opt.title = true                                -- Set the terminal window title
 vim.opt.ttimeoutlen = 50                            -- 50ms key-code timeout (fast Esc)
@@ -79,6 +80,13 @@ vim.opt.breakindentopt = 'shift:2'                  -- Emphasize broken lines by
 vim.opt.foldmethod = 'indent'
 vim.opt.foldlevelstart = 99                         -- Start with all folds open
 vim.opt.foldtext = [[v:lua.require'functions'.foldtext()]] -- Custom fold summary line
+
+-- Custom tabline. The rendering functions live in lua/tabline.lua so they
+-- are only loaded on first redraw.
+--
+-- Note: lightline would otherwise take over 'tabline' itself; it is told to
+-- leave it alone in lua/plugins/lightline.lua (g:lightline.enable.tabline).
+vim.opt.tabline = [[%!v:lua.require'tabline'.line()]]
 
 -- Skip nvim's clipboard-provider auto-detection (probing $PATH and the
 -- environment at first use); on macOS we know it's pbcopy/pbpaste.

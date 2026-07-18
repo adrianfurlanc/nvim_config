@@ -1,6 +1,6 @@
 -- ============================================================
 -- General autocommands
--- (plugin-specific ones live with their plugin's config file)
+-- (plugin-specific ones live with their plugin's spec in lua/plugins/)
 -- ============================================================
 
 local autocmd = vim.api.nvim_create_autocmd
@@ -20,12 +20,10 @@ autocmd({ 'FocusLost', 'WinLeave' }, {
 	callback = function() require('autocmds').blur_window() end,
 })
 
-autocmd('BufWritePost', {
-	group = augroup('MyAutoCmd'),
-	pattern = vim.env.MYVIMRC,
-	nested = true,
-	command = 'source $MYVIMRC',
-})
+-- NOTE: the old "source $MYVIMRC on save" autocmd is gone on purpose:
+-- re-sourcing the config would call lazy.setup() a second time, which
+-- lazy.nvim does not support. lazy reloads plugin specs on change by
+-- itself; for anything else, restart nvim.
 
 -- Don't remember the last cursor position when editing commit
 -- messages, always start on line 1
@@ -57,7 +55,7 @@ autocmd('FileType', {
 -- Blank the message area 5s after whatever printed into it: Ex command output
 -- (:w and friends), search messages, and the yank/delete line counts that
 -- 'report=0' asks for. Errors and :messages output are the exceptions and stay
--- up until dismissed with <Leader>L (see plugin/mappings.lua).
+-- up until dismissed with <Leader>L (see lua/config/keymaps.lua).
 local clear_messages = augroup('AutoClearMessages')
 autocmd('CmdlineLeave', {
 	group = clear_messages,

@@ -2,41 +2,33 @@
 -- init.lua — startup core only
 --
 -- Everything else lives in:
---   plugin/settings.lua    — options
---   plugin/mappings.lua    — key mappings
---   plugin/autocmds.lua    — general autocommands
---   plugin/color.lua       — highlight and cursor tweaks
---   plugin/<plugin>.lua    — per-plugin configuration
---   after/plugin/          — settings that override a plugin's defaults
---   lua/functions.lua      — helper functions, loaded on first require()
---   lua/pack.lua           — plugin list (minpac, loaded on demand)
---   autoload/statusline.vim— lightline components, loaded on first redraw
---                            (stays Vimscript: plugin/lightline.vim refers
---                            to them by autoload function name)
+--   lua/config/options.lua  — options
+--   lua/config/keymaps.lua  — key mappings
+--   lua/config/autocmds.lua — general autocommands
+--   lua/config/colors.lua   — highlight and cursor tweaks
+--   lua/config/lazy.lua     — lazy.nvim bootstrap and setup
+--   lua/plugins/*.lua       — plugin specs, grouped by area, with each
+--                             plugin's configuration in its spec
+--   lua/functions.lua       — helper functions, loaded on first require()
+--   autoload/statusline.vim — lightline components, loaded on first redraw
+--                             (stays Vimscript: the lightline config refers
+--                             to them by autoload function name)
 -- ============================================================
-
--- If FZF installed using git
-vim.opt.runtimepath:append(vim.fn.expand("~/.fzf"))
 
 vim.g.mapleader = " "
 
--- Plugins under pack/*/start are auto-loaded by nvim itself, so minpac and
--- the plugin registry are only loaded when actually managing packages.
-vim.api.nvim_create_user_command("PackUpdate", function()
-	require("pack").update()
-end, {})
-vim.api.nvim_create_user_command("PackClean", function()
-	require("pack").clean()
-end, {})
+-- Options, mappings and autocommands load before the plugins so everything
+-- keeps the pre-lazy.nvim source order: a plugin that defines the same
+-- mapping (e.g. vim-tmux-navigator's <C-h/j/k/l>) still wins over ours.
+require("config.options")
+require("config.keymaps")
+require("config.autocmds")
 
--- Colorscheme. The italics flags must be set before the scheme is sourced,
--- and 'background' before :colorscheme — setting it afterwards makes Vim
--- source the whole colorscheme a second time. Gruvbox is the default;
--- markdown buffers switch to OceanicNext (see plugin/color.vim).
-vim.g.gruvbox_italic = 1
-vim.g.oceanic_next_terminal_italic = 1
-vim.opt.termguicolors = true
-vim.opt.background = "dark"
-vim.cmd.colorscheme("gruvbox")
+-- Bootstraps lazy.nvim, loads every spec under lua/plugins/, and applies
+-- the colorscheme (see lua/plugins/colorscheme.lua).
+require("config.lazy")
+
+-- Highlight tweaks that must run after the colorscheme is applied.
+require("config.colors")
 
 vim.cmd.source(vim.env.VIMRUNTIME .. "/macros/matchit.vim")

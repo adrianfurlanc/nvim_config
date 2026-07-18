@@ -1,6 +1,6 @@
 -- ============================================================
 -- Keyboard mappings
--- (mapleader is set in init.lua, before this file is sourced)
+-- (mapleader is set in init.lua, before this file is loaded)
 -- ============================================================
 
 local map = vim.keymap.set
@@ -8,7 +8,7 @@ local map = vim.keymap.set
 -- NORMAL
 
 -- Behave like vim-vinegar. Entering NERDTree on the parent folder.
--- NERDTree is an opt package, so load it first (no-op once loaded).
+-- NERDTree is lazy-loaded, so load it first (no-op once loaded).
 map('n', '-', function()
 	require('functions').load_nerdtree()
 	local target = vim.fn.expand('%') == '' and '.' or vim.fn.expand('%:p:h')
@@ -78,7 +78,7 @@ map('n', '<Leader>/', ':nohlsearch<CR>')
 
 -- Dismiss whatever is in the message area: errors and :messages output, which
 -- are the two things the 5s timer deliberately leaves on screen (see
--- plugin/autocmds.lua). <C-l> would do this in stock Vim, but is taken by
+-- lua/config/autocmds.lua). <C-l> would do this in stock Vim, but is taken by
 -- split navigation above.
 map('n', '<Leader>L', function() require('functions').clear_message_area_now() end, { silent = true })
 
