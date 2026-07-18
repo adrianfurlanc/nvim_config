@@ -4,9 +4,14 @@ return {
 		'tpope/vim-fugitive', -- Vim wrapper for git
 		config = function()
 			-- Fugitive: allow navigating up in git tree with ..
+			-- (Lua callback wrapping vim.cmd on purpose: a `command` string
+			-- with `if ... | ... | endif` aborts the rest of the event's
+			-- autocmds on nvim 0.8.3, see lua/plugins/nerdtree.lua)
 			vim.api.nvim_create_autocmd('User', {
 				pattern = 'fugitive',
-				command = [[if fugitive#buffer().type() =~# '^\%(tree\|blob\)$' | nnoremap <buffer> .. :edit %:h<CR> | endif]],
+				callback = function()
+					vim.cmd([[if fugitive#buffer().type() =~# '^\%(tree\|blob\)$' | nnoremap <buffer> .. :edit %:h<CR> | endif]])
+				end,
 			})
 
 			-- Fugitive: prevent buffer list from being swamped

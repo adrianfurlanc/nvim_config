@@ -29,10 +29,18 @@ return {
 			callback = function() require('autocmds').attempt_select_last_file() end,
 		})
 
-		-- Keep NERDTree in sync with the filesystem
+		-- Keep NERDTree in sync with the filesystem.
+		-- NOTE: must be a Lua callback, not a `command` string — on nvim
+		-- 0.8.3 an API autocmd whose command contains `if ... | ... | endif`
+		-- silently aborts every remaining autocmd for that event (this one
+		-- runs early and was killing lightline's BufEnter update).
 		vim.api.nvim_create_autocmd({ 'FocusGained', 'BufEnter' }, {
 			group = vim.api.nvim_create_augroup('NerdTreeAutoRefresh', {}),
-			command = [[if exists(':NERDTreeRefreshRoot') | silent! NERDTreeRefreshRoot | endif]],
+			callback = function()
+				if vim.fn.exists(':NERDTreeRefreshRoot') == 2 then
+					vim.cmd('silent! NERDTreeRefreshRoot')
+				end
+			end,
 		})
 
 		-- Load NERDTree when entering a directory buffer, e.g. `nvim .`
