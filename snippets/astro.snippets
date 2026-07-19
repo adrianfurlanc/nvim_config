@@ -1,0 +1,16 @@
+# Custom Astro snippets (snipmate format, read by coc-snippets).
+# Body lines must be tab-indented. ${N:text} = placeholder, $N = mirror,
+# $0 = final cursor stop. Tab/S-Tab jump between them after expansion.
+
+snippet comp "Astro component scaffold (typed props + markup)"
+	---
+	interface Props {
+		${1:title}: ${2:string};
+	}
+
+	const { $1 } = Astro.props;
+	---
+
+	<${3:div}>
+		$0
+	</$3>

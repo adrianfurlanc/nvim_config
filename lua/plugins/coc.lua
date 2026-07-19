@@ -17,6 +17,7 @@ return {
 			'coc-json',
 			'coc-diagnostic',
 			'coc-eslint',
+			'coc-snippets',
 		}
 
 		-- Faster CursorHold so diagnostics and hover feel responsive (default 4000ms)
@@ -37,11 +38,18 @@ return {
 			return col == 0 or vim.fn.getline('.'):sub(col, col):match('%s') ~= nil
 		end
 
+		-- Inside a snippet session coc maps these keys buffer-locally to jump
+		-- between placeholders; they shadow the global <Tab>/<S-Tab> mappings
+		-- below until the session ends.
+		vim.g.coc_snippet_next = '<Tab>'
+		vim.g.coc_snippet_prev = '<S-Tab>'
+
 		-- <Tab>/<S-Tab> walk coc's completion menu, <CR> confirms the selection.
-		-- Replaces supertab, which can't drive coc's custom popup.
+		-- Replaces supertab, which can't drive coc's custom popup. With the menu
+		-- closed, <Tab> expands a snippet (or jumps) when the cursor is on one.
 		local expr_opts = { silent = true, expr = true, replace_keycodes = false }
 		vim.keymap.set('i', '<Tab>',
-			[[coc#pum#visible() ? coc#pum#next(1) : v:lua.coc_check_backspace() ? "\<Tab>" : coc#refresh()]],
+			[[coc#pum#visible() ? coc#pum#next(1) : coc#expandableOrJumpable() ? "\<C-r>=coc#rpc#request('doKeymap', ['snippets-expand-jump',''])\<CR>" : v:lua.coc_check_backspace() ? "\<Tab>" : coc#refresh()]],
 			expr_opts)
 		vim.keymap.set('i', '<S-Tab>', [[coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"]], expr_opts)
 		vim.keymap.set('i', '<CR>',

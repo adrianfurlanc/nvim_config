@@ -1,10 +1,6 @@
 return {
 	{
-		'honza/vim-snippets', -- Default snippet definitions for vim-snipmate and UltiSnips
-		-- Disabled: nothing reads these — no UltiSnips/snipmate, and
-		-- coc-snippets is not among the coc extensions. Re-enable if a
-		-- snippet engine arrives.
-		enabled = false,
+		'honza/vim-snippets', -- Default snippet definitions, read by coc-snippets
 	},
 	{
 		'xolox/vim-misc', -- Required for vim-session
