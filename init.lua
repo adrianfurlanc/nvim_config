@@ -15,6 +15,13 @@
 --                             to them by autoload function name)
 -- ============================================================
 
+-- Byte-compiled module cache (nvim 0.9+; vim.loader is nil on 0.8.3 so this
+-- is a no-op for now). Must run before the first require() to have any
+-- effect — the cache only speeds up module loads that happen after it.
+if vim.loader then
+	vim.loader.enable()
+end
+
 vim.g.mapleader = " "
 
 -- Options, mappings and autocommands load before the plugins so everything
@@ -31,4 +38,5 @@ require("config.lazy")
 -- Highlight tweaks that must run after the colorscheme is applied.
 require("config.colors")
 
-vim.cmd.source(vim.env.VIMRUNTIME .. "/macros/matchit.vim")
+-- matchit: nothing to do — modern nvim bundles it as a default plugin
+-- (the old `source $VIMRUNTIME/macros/matchit.vim` stopped existing in 0.9+)

@@ -1,6 +1,15 @@
--- fzf.vim builds on the base fzf plugin from the git install in ~/.fzf,
--- which is kept on the runtimepath via performance.rtp.paths in
--- lua/config/lazy.lua (lazy.nvim resets 'runtimepath' at startup).
+-- fzf-lua: Lua pickers (files, grep, buffers, ...) driving the fzf binary
+-- from the Homebrew install on PATH. Replaced fzf.vim, which needed the
+-- ~/.fzf git install kept on the runtimepath in lua/config/lazy.lua.
 return {
-	'junegunn/fzf.vim', -- Use FZF for searching buffers, Ex commands, etc
+	'ibhagwan/fzf-lua',
+	cmd = 'FzfLua',
+	dependencies = { "nvim-tree/nvim-web-devicons" },
+	keys = {
+		{ '<C-p>', '<cmd>FzfLua files<cr>', desc = 'Find files' },
+		{ '<leader>fb', '<cmd>FzfLua buffers<cr>', desc = 'Find buffers' },
+		{ '<leader>fg', '<cmd>FzfLua live_grep<cr>', desc = 'Live grep (rg)' },
+		{ '<leader>fh', '<cmd>FzfLua helptags<cr>', desc = 'Search help' },
+	},
+	opts = {},
 }

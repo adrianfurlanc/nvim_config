@@ -28,8 +28,7 @@ map('n', '<Leader>s', '<Plug>(Scalpel)', { remap = true })
 -- Toggle show/hide invisible chars
 map('n', '<leader>i', ':set list!<cr>')
 
--- Toggle FZF for fuzzy file search
--- map('n', '<C-p>', ':<C-u>FZF<CR>')
+-- Fuzzy-finder mappings (<C-p>, <leader>f*) live in lua/plugins/fzf.lua
 
 -- Easier split navigation
 map('n', '<C-h>', '<C-w>h')

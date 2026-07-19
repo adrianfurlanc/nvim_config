@@ -26,12 +26,4 @@ require('lazy').setup({
 	install = { colorscheme = { 'gruvbox' } },
 	-- No background polling for updates; check by hand with :Lazy check
 	checker = { enabled = false },
-	performance = {
-		rtp = {
-			-- lazy.nvim resets 'runtimepath' on startup; keep the base fzf
-			-- plugin from the git install (provides the :FZF command that
-			-- fzf.vim builds on)
-			paths = { vim.fn.expand('~/.fzf') },
-		},
-	},
 })

@@ -48,7 +48,13 @@ end
 local function clear_normal_links()
 	for _, line in ipairs(vim.split(vim.fn.execute('silent highlight'), '\n')) do
 		if line:find(' links to Normal$') then
-			vim.cmd('highlight! link ' .. line:match('^%S+') .. ' NONE')
+			-- On nvim 0.9+ :highlight wraps long entries onto continuation
+			-- lines that start with whitespace; only lines that begin with
+			-- the group name carry the link we want to break.
+			local group = line:match('^%S+')
+			if group then
+				vim.cmd('highlight! link ' .. group .. ' NONE')
+			end
 		end
 	end
 end
@@ -68,6 +74,23 @@ vim.cmd([[
 	hi Comment gui=italic cterm=italic
 	hi ColorColumn ctermbg=237
 ]])
+
+-- nvim 0.10+ draws the statusline with the StatusLine group's ATTRIBUTES
+-- (gruvbox defines it as `reverse`) underneath lightline's color-only
+-- highlight groups, so every segment rendered fg/bg-swapped — a beige bar
+-- with dark text. Strip the attribute; lightline provides the real colors.
+-- Re-applied on ColorScheme because both schemes define it with reverse.
+local function unreverse_statusline()
+	vim.cmd([[
+		highlight StatusLine   gui=NONE cterm=NONE
+		highlight StatusLineNC gui=NONE cterm=NONE
+	]])
+end
+unreverse_statusline()
+vim.api.nvim_create_autocmd('ColorScheme', {
+	group = vim.api.nvim_create_augroup('StatuslineAttrs', {}),
+	callback = unreverse_statusline,
+})
 
 -- Search matches: the match under the cursor (CurSearch) keeps the scheme's
 -- default reverse-video Search look; every other match is drawn as red

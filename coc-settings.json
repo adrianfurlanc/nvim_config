@@ -30,5 +30,7 @@
 				"warning": "warning"
 			}
 		}
-	}
+  },
+	"snippets.ultisnips.enable": false,
+	"snippets.ultisnips.pythonPrompt": false
 }
