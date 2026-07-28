@@ -14,3 +14,27 @@ snippet comp "Astro component scaffold (typed props + markup)"
 	<${3:div}>
 		$0
 	</$3>
+
+snippet layout "Astro layout (typed title prop + HTML shell + slot)"
+	---
+	interface Props {
+		${1:title}: ${2:string};
+	}
+
+	const { $1 } = Astro.props;
+	---
+
+	<!doctype html>
+	<html lang="${3:en}">
+		<head>
+			<meta charset="utf-8" />
+			<meta name="viewport" content="width=device-width" />
+			<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+			<meta name="generator" content={Astro.generator} />
+			<title>{$1}</title>
+		</head>
+		<body>
+			<slot />
+			$0
+		</body>
+	</html>
