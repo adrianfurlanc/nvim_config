@@ -3,15 +3,75 @@
 
 local M = {}
 
+-- Open a file in Marked for a rendered preview (see the :Preview command in
+-- ftplugin/markdown.lua). Marked watches the file it was given and re-renders
+-- on every write, so this only needs to run once per file: leave it open on a
+-- second monitor and it follows along as you save.
+--
+-- Launched by name rather than by path or bundle id on purpose. The Setapp
+-- build lives at /Applications/Setapp/Marked.app with the bundle id
+-- com.brettterpstra.marked-setapp, which differs from both the direct-download
+-- and App Store builds; asking LaunchServices for "Marked" finds whichever one
+-- is installed, and keeps working if Setapp moves or updates the bundle.
+local preview_app = 'Marked'
+
+function M.preview(file)
+	-- No argument: preview the current buffer's file.
+	local is_current = file == nil or file == ''
+	local path = is_current and vim.fn.expand('%:p') or vim.fn.fnamemodify(file, ':p')
+
+	if path == '' then
+		vim.notify('Preview: buffer has no file name; write it first', vim.log.levels.ERROR)
+		return
+	end
+	if vim.fn.filereadable(path) == 0 then
+		vim.notify('Preview: no such file on disk: ' .. path, vim.log.levels.ERROR)
+		return
+	end
+
+	-- Marked renders what is on disk, so an unsaved buffer previews as its
+	-- last-written state. Not auto-writing here: :Preview shouldn't have the
+	-- side effect of saving. The next :w brings Marked in sync by itself.
+	if is_current and vim.bo.modified then
+		vim.notify('Preview: showing last saved version (buffer is modified)', vim.log.levels.WARN)
+	end
+
+	-- Async so nvim doesn't block on the app launch (cold start is slow).
+	-- Passing argv, not a shell string, so paths with spaces need no quoting —
+	-- which matters here, given ~/Desktop/Vibe Coding and the iCloud vault.
+	vim.system({ 'open', '-a', preview_app, path }, { text = true }, function(result)
+		if result.code ~= 0 then
+			-- Callback runs in a fast event context, where notify is unsafe.
+			vim.schedule(function()
+				local detail = (result.stderr or ''):gsub('%s+$', '')
+				vim.notify('Preview failed: ' .. (detail ~= '' and detail or 'open exited ' .. result.code),
+					vim.log.levels.ERROR)
+			end)
+		end
+	end)
+end
+
 -- Switch to plaintext mode with: require('functions').plaintext()
 function M.plaintext()
 	vim.opt_local.linebreak = true
 	vim.opt_local.list = false
-	vim.opt_local.spell = true
 	vim.opt_local.number = false
 	vim.opt_local.textwidth = 0
 	vim.opt_local.wrap = true
 	vim.opt_local.wrapmargin = 0
+
+	-- Spell-check English and Spanish at once: a word is only flagged when
+	-- neither dictionary knows it, so mixed-language notes don't light up.
+	-- (The 'es' dictionary is not bundled with nvim; it lives in
+	-- ~/.local/share/nvim/site/spell/, downloaded by nvim on first use.)
+	--
+	-- 'spellfile' is where zg/zw write: pinned to one file next to this config
+	-- so the additions are versioned with it, rather than landing in the first
+	-- writable 'runtimepath' entry under whichever language happens to be first
+	-- in 'spelllang'.
+	vim.opt_local.spell = true
+	vim.opt_local.spelllang = { 'en', 'es' }
+	vim.opt_local.spellfile = vim.fn.expand('~/.config/nvim/spell/en.utf-8.add')
 
 	vim.keymap.set('n', 'j', 'gj', { buffer = true })
 	vim.keymap.set('n', 'k', 'gk', { buffer = true })
