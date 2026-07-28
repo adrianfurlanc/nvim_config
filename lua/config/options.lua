@@ -12,6 +12,7 @@ vim.opt.encoding = 'utf-8'                          -- UTF-8...
 vim.opt.bomb = false                                -- ...without a byte order mark
 vim.opt.exrc = true                                 -- Read project-local .nvimrc/.exrc (restricted by 'secure')
 vim.opt.fileformats = { 'unix', 'dos' }             -- Prefer unix (LF) line endings, then dos (CRLF)
+vim.opt.fillchars:append({ eob = ' ' })             -- Blank instead of ~ past the end of the buffer
 vim.opt.formatoptions:append('n')                   -- Recognize numbered lists when formatting
 vim.opt.formatoptions:append('j')                   -- Remove comment leader when joining lines
 vim.opt.gdefault = true                             -- Substitute all matches per line by default
@@ -21,9 +22,9 @@ vim.opt.history = 1000                              -- Remember 1000 command-lin
 vim.opt.hlsearch = true                             -- Highlight search matches
 vim.opt.ignorecase = true                           -- Case-insensitive searching...
 vim.opt.incsearch = true                            -- Show matches while typing a search
+vim.opt.inccommand = 'split'                        -- Live preview of :substitute, with match window
 vim.opt.infercase = true                            -- Match case of typed text in completion
 vim.opt.laststatus = 2                              -- Always show the statusline
-vim.opt.lazyredraw = true                           -- Don't redraw mid-macro
 vim.opt.linebreak = true                            -- Wrap lines at word boundaries
 vim.opt.listchars = { tab = '▸ ', eol = '¬', trail = '·' } -- Symbols for tab, eol and trailing spaces
 vim.opt.magic = true                                -- Standard regex special characters
