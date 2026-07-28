@@ -5,6 +5,7 @@
 --   lua/config/options.lua  — options
 --   lua/config/keymaps.lua  — key mappings
 --   lua/config/autocmds.lua — general autocommands
+--   lua/config/filetypes.lua — filetype detection overrides
 --   lua/config/colors.lua   — highlight and cursor tweaks
 --   lua/config/lazy.lua     — lazy.nvim bootstrap and setup
 --   lua/plugins/*.lua       — plugin specs, grouped by area, with each
@@ -30,6 +31,10 @@ vim.g.mapleader = " "
 require("config.options")
 require("config.keymaps")
 require("config.autocmds")
+
+-- Must come before the first file is opened, so the overrides are in place
+-- when detection runs for it.
+require("config.filetypes")
 
 -- Bootstraps lazy.nvim, loads every spec under lua/plugins/, and applies
 -- the colorscheme (see lua/plugins/colorscheme.lua).

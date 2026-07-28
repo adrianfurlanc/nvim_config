@@ -5,3 +5,4 @@ init-old.vim
 pack/
 undodir/
 sessions/
+spell/*.add.spl
