@@ -9,17 +9,14 @@ return {
 	-- a yarn build.
 	'neoclide/coc.nvim',
 	branch = 'release',
-	config = function()
-		vim.g.coc_global_extensions = {
-			'@yaegassy/coc-astro',
-			'coc-tsserver',
-			'coc-prettier',
-			'coc-json',
-			'coc-diagnostic',
-			'coc-eslint',
-			'coc-snippets',
-		}
-
+	-- Loaded right after the UI paints instead of during startup: coc's
+	-- plugin file starts the node server itself when sourced late (it only
+	-- waits for VimEnter when loaded during startup), and the server attaches
+	-- every already-open buffer when it initializes.
+	event = 'VeryLazy',
+	init = function()
+		-- Options live in init so they apply during startup: 'signcolumn'
+		-- reserved up front means no text shift when coc loads a moment later.
 		-- Faster CursorHold so diagnostics and hover feel responsive (default 4000ms)
 		vim.opt.updatetime = 300
 
@@ -31,18 +28,29 @@ return {
 		-- (coc.nvim #649)
 		vim.opt.writebackup = false
 
+		vim.g.coc_global_extensions = {
+			'@yaegassy/coc-astro',
+			'coc-tsserver',
+			'coc-prettier',
+			'coc-json',
+			'coc-diagnostic',
+			'coc-eslint',
+			'coc-snippets',
+		}
+
+		-- Inside a snippet session coc maps these keys buffer-locally to jump
+		-- between placeholders; they shadow the global <Tab>/<S-Tab> mappings
+		-- in config until the session ends.
+		vim.g.coc_snippet_next = '<Tab>'
+		vim.g.coc_snippet_prev = '<S-Tab>'
+	end,
+	config = function()
 		-- Global because the <Tab> mapping below is a Vimscript expression (coc's
 		-- recommended lua setup) and reaches it through v:lua.
 		function _G.coc_check_backspace()
 			local col = vim.fn.col('.') - 1
 			return col == 0 or vim.fn.getline('.'):sub(col, col):match('%s') ~= nil
 		end
-
-		-- Inside a snippet session coc maps these keys buffer-locally to jump
-		-- between placeholders; they shadow the global <Tab>/<S-Tab> mappings
-		-- below until the session ends.
-		vim.g.coc_snippet_next = '<Tab>'
-		vim.g.coc_snippet_prev = '<S-Tab>'
 
 		-- <Tab>/<S-Tab> walk coc's completion menu, <CR> confirms the selection.
 		-- Replaces supertab, which can't drive coc's custom popup. With the menu
@@ -51,8 +59,7 @@ return {
 		vim.keymap.set('i', '<Tab>',
 			[[coc#pum#visible() ? coc#pum#next(1) : coc#expandableOrJumpable() ? "\<C-r>=coc#rpc#request('doKeymap', ['snippets-expand-jump',''])\<CR>" : v:lua.coc_check_backspace() ? "\<Tab>" : coc#refresh()]],
 			expr_opts)
-		vim.keymap.set('i', '<S-Tab>', [[coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"]], expr_opts)
-		vim.keymap.set('i', '<CR>',
+		vim.keymap.set('i', '<S-Tab>', [[coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"]], expr_opts)		vim.keymap.set('i', '<CR>',
 			[[coc#pum#visible() ? coc#pum#confirm() : "\<C-g>u\<CR>\<C-r>=coc#on_enter()\<CR>"]],
 			expr_opts)
 

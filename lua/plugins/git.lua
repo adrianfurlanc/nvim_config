@@ -1,6 +1,16 @@
 return {
-	{ 'airblade/vim-gitgutter' }, -- View git diff in gutter
 	{
+		'airblade/vim-gitgutter', -- View git diff in gutter
+		event = 'VeryLazy',
+		config = function()
+			-- Loaded after the first buffer's BufEnter already fired, so kick
+			-- off one full pass by hand; from here its own autocmds take over.
+			vim.fn['gitgutter#all'](1)
+		end,
+	},
+	{
+		-- Stays eager: the lightline branch component (statusline#fugitive)
+		-- needs fugitive's buffer detection done by the first redraw.
 		'tpope/vim-fugitive', -- Vim wrapper for git
 		config = function()
 			-- Fugitive: allow navigating up in git tree with ..

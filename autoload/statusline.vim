@@ -34,30 +34,48 @@ endfunction
 " or ' [staged,modified]'. Parsed from the two-column XY code of
 " git status --porcelain (X = index, Y = worktree). Cached per buffer
 " because the statusline redraws far too often to shell out each time.
+" Async (jobstart, not system()): the synchronous version forked git on the
+" startup path (BufReadPost of the first file) and stalled every write and
+" tmux focus switch by a few ms. The suffix now lands a moment later via the
+" callback, which re-renders the statusline.
 function! statusline#update_git_status() abort
 	let b:lightline_git_status = ''
 	let path = expand('%:p')
 	if empty(path) || !filereadable(path) || !exists('*FugitiveGitDir') || empty(FugitiveGitDir())
 		return
 	endif
-	let out = system('git -C ' . shellescape(expand('%:p:h')) . ' status --porcelain -- ' . shellescape(path))
-	if v:shell_error || empty(out)
+	call jobstart(
+		\ ['git', '-C', expand('%:p:h'), 'status', '--porcelain', '--', path],
+		\ {
+		\   'stdout_buffered': v:true,
+		\   'on_stdout': function('s:OnGitStatus', [bufnr('%')]),
+		\ })
+endfunction
+
+function! s:OnGitStatus(bufnr, job, data, event) abort
+	if !bufexists(a:bufnr)
 		return
 	endif
-	if out[0] ==# '?'
-		let b:lightline_git_status = ' [untracked]'
-		return
+	let out = get(a:data, 0, '')
+	let status = ''
+	if !empty(out)
+		if out[0] ==# '?'
+			let status = ' [untracked]'
+		else
+			let parts = []
+			if out[0] !=# ' '
+				call add(parts, 'staged')
+			endif
+			if out[1] !=# ' '
+				call add(parts, 'modified')
+			endif
+			if !empty(parts)
+				let status = ' [' . join(parts, ',') . ']'
+			endif
+		endif
 	endif
-	let parts = []
-	if out[0] !=# ' '
-		call add(parts, 'staged')
-	endif
-	if out[1] !=# ' '
-		call add(parts, 'modified')
-	endif
-	if !empty(parts)
-		let b:lightline_git_status = ' [' . join(parts, ',') . ']'
-	endif
+	call setbufvar(a:bufnr, 'lightline_git_status', status)
+	call lightline#update()
 endfunction
 
 " The gruvbox lightline theme (lightline-gruvbox.vim) uses gray statusline

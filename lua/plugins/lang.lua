@@ -6,6 +6,8 @@ return {
 	{ 'evanleck/vim-svelte' },      -- Svelte component syntax and indentation (.svelte files)
 	{ 'wuelnerdotexe/vim-astro' },  -- Astro filetype detection, syntax highlighting and indentation (.astro files)
 	{ 'jxnblk/vim-mdx-js' },        -- MDX filetype detection and highlighting (markdown + JSX, .mdx files)
-	{ 'mattn/emmet-vim' },          -- Emmet for web development
-	{ 'sgur/vim-editorconfig' },    -- Reads .editorconfig files and applies indent/style settings per project
+	{ 'mattn/emmet-vim', event = 'InsertEnter' }, -- Emmet for web development; all its work starts in insert mode
+
+	-- sgur/vim-editorconfig was dropped: nvim 0.9+ ships builtin .editorconfig
+	-- support (enabled by default; opt out with vim.g.editorconfig = false)
 }

@@ -83,12 +83,6 @@ function M.cycle_numbering()
 	vim.o.relativenumber = transitions[key].relativenumber
 end
 
--- Alias a built-in command to another one, e.g. :grep -> :GrepperGrep
-function M.setup_command_alias(input, output)
-	vim.cmd(('cabbrev <expr> %s ((getcmdtype() is# ":" && getcmdline() is# "%s") ? ("%s") : ("%s"))')
-		:format(input, input, output, input))
-end
-
 -- Load NERDTree on first use (it costs ~40ms at startup, mostly probing the
 -- clipboard and $PATH, so it is marked lazy in lua/plugins/nerdtree.lua).
 -- With a directory argument, hands that buffer to NERDTree's netrw hijack —

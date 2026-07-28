@@ -14,6 +14,7 @@ return {
 	},
 	{
 		'RRethy/vim-illuminate', -- Auto-highlights other uses of the word under the cursor via LSP, Tree-sitter, or regex
+		event = 'VeryLazy', -- first highlight happens on cursor movement anyway
 		config = function()
 			-- Disabled for markdown (prose repeats words constantly, so the
 			-- underlines are noise there); the first three entries are the
@@ -29,12 +30,16 @@ return {
 		end,
 	},
 	{
+		-- Stays eager: the lightline tagbar component calls tagbar#currenttag()
+		-- on every redraw, which errors if the plugin isn't on the runtimepath.
 		'majutsushi/tagbar', -- A class outline viewer for Vim
 		init = function()
 			vim.g.tagbar_compact = 1
 		end,
 	},
 	{
+		-- Stays eager: statusline#filetype/fileformat call WebDevIcons*
+		-- functions on the first redraw.
 		'ryanoasis/vim-devicons', -- Pretty Icons
 		init = function()
 			-- Add Unicode folder icons (📁-style glyphs from a Nerd Font) to
@@ -42,6 +47,11 @@ return {
 			-- distinguishable from files.
 			vim.g.WebDevIconsUnicodeDecorateFolderNodes = 1
 		end,
+	},
+	{
+		'folke/which-key.nvim', -- Pops up a panel of available mappings after a pending prefix key
+		event = 'VeryLazy',
+		opts = {},
 	},
 	{ 'lilydjwg/colorizer' },  -- Colorizes hex color codes (#rrggbb / #rgb) inline in the buffer
 	{ 'wincent/pinnacle' },    -- Utility functions for tweaking and reading Vim highlight groups
