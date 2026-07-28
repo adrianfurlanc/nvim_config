@@ -171,8 +171,13 @@ map('x', '<C-]>', '<C-w>]')
 
 -- COMMAND
 
--- w!! to write a file as sudo
-map('c', 'w!!', 'w !sudo tee % >/dev/null')
+-- :W writes the current file as root, :W! re-prompts for the password.
+-- Replaces the old `w!!` cmdline abbreviation (`w !sudo tee %`), which asked
+-- for the password on every write; lua/sudo/write.lua feeds it to sudo via
+-- SUDO_ASKPASS instead and caches it for 5 minutes.
+vim.api.nvim_create_user_command('W', function(opts)
+	require('sudo.write')(opts.bang and '!' or '')
+end, { bang = true, desc = 'Write the current file as root' })
 
 -- Open files in same directory as current file
 map('c', '%%', "<C-R>=fnameescape(expand('%:h')).'/'<cr>")
