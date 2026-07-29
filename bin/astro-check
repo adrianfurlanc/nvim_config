@@ -1,0 +1,44 @@
+#!/bin/bash
+#
+# Run `astro check` with the ANSI colour stripped, for after/compiler/astro.vim.
+#
+# Two things force this to be a script rather than part of 'makeprg':
+#
+# 1. `astro check` always colours its diagnostics. It formats them with
+#    TypeScript's own colouring routine and emits escapes unconditionally —
+#    not only when stdout is a terminal. NO_COLOR, FORCE_COLOR, CI and
+#    TERM=dumb were all tried; none of them make any difference. Left in, the
+#    escapes sit in front of every %f and nothing in the errorformat matches.
+#
+# 2. The filter cannot live in 'makeprg'. :Make comes from vim-dispatch, which
+#    builds its own command line instead of handing 'makeprg' to a shell the
+#    way built-in :make does, and a pipe does not survive that: it is dropped
+#    without a word, the output arrives still coloured, and it looks for all
+#    the world like the errorformat is at fault.
+#
+# perl rather than sed because BSD sed, which is what macOS ships, has no \x1b.
+#
+# Usage: astro-check <project-root>
+#   The argument is appended by :Make; see after/compiler/astro.vim.
+
+# The same perl pass also drops everything that isn't a diagnostic: the
+# startup banner, the blank lines, the echoed source line with its ~~~~
+# underline, and the trailing "Result (N files)" summary. The errorformat's
+# %-G catch-all is supposed to handle those, but :Make doesn't honour it —
+# vim-dispatch adds every unmatched line to the quickfix list as an invalid
+# entry, which is what fills :copen with || noise. Filtering here means the
+# list holds diagnostics and nothing else, under :Make and :make alike.
+#
+# Trade-off: TypeScript occasionally elaborates an error across several
+# indented continuation lines, and those are dropped with everything else.
+# The first line carries the file, position and summary; coc shows the full
+# text inline in the buffer.
+#
+# Report astro check's exit status, not perl's, so :Make still knows whether
+# the check passed. perl always exits 0, so with pipefail the pipeline takes
+# astro check's status. (grep would not work here: it exits 1 when nothing
+# matches, turning a clean project into a reported failure.)
+set -o pipefail
+
+npx astro check --root "$@" 2>&1 |
+	perl -ne 's/\e\[[0-9;]*m//g; print if /:\d+:\d+ - (?:error|warning|hint) ts\(/'

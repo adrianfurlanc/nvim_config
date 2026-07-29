@@ -51,6 +51,49 @@ function M.preview(file)
 	end)
 end
 
+-- Run a whole-project check into the quickfix list, behind the :Lint,
+-- :Stylelint, :Typecheck and :AstroCheck commands (see lua/config/keymaps.lua).
+-- coc only reports diagnostics for buffers that are actually open; this runs
+-- the real CLI across the project and fills the quickfix list, which the
+-- <Up>/<Down>/<Left>/<Right> mappings already walk.
+--
+-- {glob} is appended to the project root, for tools that need file arguments
+-- rather than a directory. The target is passed to :Make instead of being
+-- baked into 'makeprg' so the compiler plugins stay project-agnostic, and it
+-- is shell-escaped because these projects live under ~/Desktop/Vibe Coding —
+-- an unquoted path with a space would be split into two arguments. Escaping
+-- also stops the shell expanding the glob, leaving stylelint to expand it.
+function M.lint(compiler, glob)
+	local source = vim.api.nvim_buf_get_name(0)
+	if source == '' then
+		source = vim.uv.cwd()
+	end
+	local root = vim.fs.root(source, { 'package.json', '.git' })
+	if not root then
+		vim.notify('No package.json or .git above ' .. source, vim.log.levels.ERROR)
+		return
+	end
+
+	-- Write the buffer first. Every one of these tools reads from disk, so an
+	-- unsaved buffer gets checked in its last-written state — the errors you
+	-- are looking at go unreported and the run looks like a false negative.
+	-- This is what 'autowrite' does for :make; done explicitly here rather than
+	-- by setting that option, which would also write on :next, :cnext and
+	-- friends. :update is a no-op when the buffer is unmodified.
+	--
+	-- Only the current buffer, same as 'autowrite'. Use :wall first if other
+	-- buffers in the project are also dirty.
+	if vim.api.nvim_buf_get_name(0) ~= '' and vim.bo.modified and vim.bo.buftype == '' then
+		vim.cmd('update')
+	end
+
+	vim.cmd('compiler ' .. compiler)
+	-- vim-dispatch is lazy-loaded on :Make (see lua/plugins/test.lua), so this
+	-- is also what pulls it in; it runs the build asynchronously and populates
+	-- the quickfix list when it finishes.
+	vim.cmd('Make ' .. vim.fn.shellescape(root .. (glob or '')))
+end
+
 -- Switch to plaintext mode with: require('functions').plaintext()
 function M.plaintext()
 	vim.opt_local.linebreak = true
