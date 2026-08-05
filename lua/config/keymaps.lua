@@ -65,6 +65,10 @@ map('n', '<leader><leader>', '<c-^>')
 -- :only mapped to leader+o
 map('n', '<leader>o', ':only<cr>')
 
+-- Pre-fill the cmdline with :q (no <CR>: press Enter yourself, or add ! / a
+-- count first)
+map('n', '<leader>q', ':q')
+
 -- <leader>p -- Show the path of the current file (mnemonic: path; useful when
 -- you have a lot of splits and the status line gets truncated).
 map('n', '<Leader>p', ":echo expand('%:p:h') . '/'<CR>")

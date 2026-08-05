@@ -35,7 +35,17 @@ return {
 		cmd = 'Wipeout',
 	},
 	{ 'qpkorr/vim-bufkill', event = 'VeryLazy' },              -- Unload/delete/wipe buffers without closing the window or split
-	{ 'Valloric/ListToggle', event = 'VeryLazy' },             -- Toggles the quickfix list and location-list open/closed with simple keybindings
+	{
+		'Valloric/ListToggle', -- Toggles the quickfix list and location-list open/closed with simple keybindings
+		event = 'VeryLazy',
+		init = function()
+			-- The default quickfix map is <leader>q, which keymaps.lua already
+			-- uses to pre-fill :q. The plugin maps with <unique>, so the clash
+			-- aborts its entire plugin file (E227). Move it to <leader>c
+			-- (mnemonic: :copen); the location list keeps the default <leader>l.
+			vim.g.lt_quickfix_list_toggle_map = '<leader>c'
+		end,
+	},
 	{ 'junegunn/vim-peekaboo', event = 'VeryLazy' },           -- Extends " / @ / CTRL-R to peek into registers and marks before using them
 	{
 		'kshenoy/vim-signature', -- View marks in gutter
