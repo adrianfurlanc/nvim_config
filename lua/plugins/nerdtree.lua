@@ -22,6 +22,14 @@ return {
 		-- non-directory nodes.
 		vim.g.NERDTreeMouseMode = 2
 
+		-- Keep :cd in sync with the tree root, so fzf-lua (which searches
+		-- the CWD) follows along as you move around with '-' (up a dir) or
+		-- 'C' (make node the new root). Only NERDTree.changeRoot() and
+		-- :NERDTree <dir> chdir; the vinegar-style '-' that *opens* the tree
+		-- goes through createWindowTree(), which does not, so merely
+		-- browsing a file's directory leaves the CWD alone.
+		vim.g.NERDTreeChDirMode = 2
+
 		-- Make NERDTree behave more like vim-vinegar
 		vim.api.nvim_create_autocmd('User', {
 			group = vim.api.nvim_create_augroup('WincentNERDTree', {}),

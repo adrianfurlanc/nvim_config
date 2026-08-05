@@ -187,7 +187,7 @@ end, { bang = true, desc = 'Write the current file as root' })
 map('c', '%%', "<C-R>=fnameescape(expand('%:h')).'/'<cr>")
 
 -- Change Working Directory to that of the current file
-map('c', 'cd.', 'lcd %:p:h')
+map('c', 'cd.', 'cd %:p:h')
 
 map('c', '<C-a>', '<Home>')
 map('c', '<C-e>', '<End>')
