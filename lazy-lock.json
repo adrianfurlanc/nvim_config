@@ -19,6 +19,7 @@
   "nvim-web-devicons": { "branch": "master", "commit": "0ca28b61a04fe7426cefbdd52c2647ef0e335b5f" },
   "oceanic-next": { "branch": "master", "commit": "09833f72d5ba23de2e8bcae18f479f326f5f677a" },
   "pinnacle": { "branch": "main", "commit": "6849357c9cf1138894e26d87b6721946fb193406" },
+  "project.nvim": { "branch": "main", "commit": "8c6bad7d22eef1b71144b401c9f74ed01526a4fb" },
   "rainbow": { "branch": "master", "commit": "76ca1a20aa42edb5c65c19029968aad4625790dc" },
   "scalpel": { "branch": "main", "commit": "25147091c1c2a6475b0cef93ed38fee575fcffb5" },
   "tagbar": { "branch": "master", "commit": "07cb8247487208124978daff8e13624667635457" },

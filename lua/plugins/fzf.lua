@@ -18,6 +18,8 @@ return {
 		{ '<leader>fR', '<cmd>FzfLua registers<cr>', desc = 'Registers' },
 		{ '<leader>fs', '<cmd>FzfLua git_status<cr>', desc = 'Git status' },
 		{ '<leader>fB', '<cmd>FzfLua git_bcommits<cr>', desc = 'Browse file commits' },
+		-- <leader>fp (recent projects) is in lua/plugins/project.lua: it
+		-- reads project.nvim's history, so it belongs with that spec.
 	},
 	opts = {},
 }
