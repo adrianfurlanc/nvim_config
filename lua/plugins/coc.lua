@@ -9,6 +9,16 @@ return {
 	-- a yarn build.
 	'neoclide/coc.nvim',
 	branch = 'release',
+	-- Pinned 2026-08-07: the next release build (1245b4a7, built from
+	-- master 2026-08-05) never finishes initializing when the plugin is
+	-- sourced late, which the VeryLazy event below does. Its new
+	-- coc#rpc#notify() drops every message until g:coc_enabled is 1, but on
+	-- late sourcing the initial 'VimEnter' notify to the server is what's
+	-- dropped -- and the server sets coc_enabled only after receiving it, so
+	-- both sides wait forever and no diagnostics/completion ever arrive.
+	-- Remove the pin once upstream fixes the deadlock (test: open a .ts file,
+	-- :echo g:coc_service_initialized should be 1).
+	commit = 'd1689a4876305e5fc6691910c8ee6f1eb5da2219',
 	-- Loaded right after the UI paints instead of during startup: coc's
 	-- plugin file starts the node server itself when sourced late (it only
 	-- waits for VimEnter when loaded during startup), and the server attaches
