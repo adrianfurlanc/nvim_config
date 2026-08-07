@@ -59,9 +59,6 @@ map('n', '<Down>', ':cnext<CR>', { silent = true })
 map('n', '<Left>', ':cpfile<CR>', { silent = true })
 map('n', '<Right>', ':cnfile<CR>', { silent = true })
 
--- Switch between last two files
-map('n', '<leader><leader>', '<c-^>')
-
 -- :only mapped to leader+o
 map('n', '<leader>o', ':only<cr>')
 
