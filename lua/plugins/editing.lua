@@ -46,7 +46,6 @@ return {
 			vim.g.lt_quickfix_list_toggle_map = '<leader>c'
 		end,
 	},
-	{ 'junegunn/vim-peekaboo', event = 'VeryLazy' },           -- Extends " / @ / CTRL-R to peek into registers and marks before using them
 	{
 		'kshenoy/vim-signature', -- View marks in gutter
 		event = 'VeryLazy',
