@@ -162,6 +162,11 @@ map('x', '.', ':norm.<CR>')
 -- Execute a macro over visual line selections
 map('x', 'Q', ":'<,'>:normal @q<CR>")
 
+-- Move lines around. The leading ':' (rather than <Cmd>) is deliberate: it
+-- leaves Visual mode, which is what sets '< and '> to the current selection.
+map('x', '<C-Up>', ":<C-u>lua require('mappings.visual').move_up()<CR>", { silent = true })
+map('x', '<C-Down>', ":<C-u>lua require('mappings.visual').move_down()<CR>", { silent = true })
+
 -- Split navigation from visual mode
 map('x', '<C-h>', '<C-w>h')
 map('x', '<C-j>', '<C-w>j')

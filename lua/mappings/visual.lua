@@ -1,12 +1,11 @@
 -- Move lines up and down
 -- (formerly autoload/mappings/visual.vim; loaded on first use)
 
-local function is_visual_line()
-	return vim.fn.visualmode() == 'V'
-end
-
+-- Operates on the whole lines the selection covers, so charwise and
+-- blockwise selections move too. :move keeps the '< and '> marks on the
+-- text it moved, so gv reselects it afterwards.
 local function move(address, at_limit)
-	if is_visual_line() and not at_limit then
+	if not at_limit then
 		vim.cmd("'<,'>move " .. address)
 		vim.fn.feedkeys('gv=', 'n')
 	end
