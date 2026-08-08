@@ -31,7 +31,6 @@ vim.opt.magic = true                                -- Standard regex special ch
 vim.opt.modeline = true                             -- Honor modelines in files
 vim.opt.modelines = 2                               -- Look for modelines in first/last 2 lines
 vim.opt.backup = false                              -- No backup files
-vim.opt.endofline = false                           -- Don't force a trailing newline on write
 vim.opt.errorbells = false                          -- No beep on errors
 vim.opt.showmode = false                            -- Hide mode message (lightline shows it)
 vim.opt.startofline = false                         -- Keep cursor column on jumps
