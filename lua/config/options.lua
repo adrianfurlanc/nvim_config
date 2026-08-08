@@ -67,7 +67,7 @@ vim.opt.wildignore = '*.swp,*.bak,*.pyc,*.class,*.pdf,*.zip,*.mkv,*.mp4,*.mp3' -
 vim.opt.wildmenu = true                             -- Command-line completion menu
 vim.opt.wildmode = 'list:full'                      -- List all matches, complete first match
 vim.opt.wrap = true                                 -- Soft-wrap long lines
-vim.opt_local.keywordprg = ':help'                  -- K looks up the word under cursor with :help
+vim.opt.keywordprg = ':help'                        -- K looks up the word under cursor with :help
 
 vim.opt.belloff = 'all'                             -- Never ring the bell, for any reason
 
