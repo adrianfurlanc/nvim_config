@@ -4,6 +4,10 @@
 	"diagnostic.floatConfig": {
 		"border": true
 	},
+	"diagnostic.errorSign": "",
+	"diagnostic.warningSign": "",
+	"diagnostic.infoSign": "",
+	"diagnostic.hintSign": "",
 	"prettier.documentSelectors": ["**/*.astro"],
 	"[astro]": {
 		"coc.preferences.formatOnSave": true

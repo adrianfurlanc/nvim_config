@@ -46,6 +46,10 @@ return {
 			'coc-diagnostic',
 			'coc-eslint',
 			'coc-snippets',
+			-- Ships no server of its own: fetch lua-language-server once with
+			-- :CocCommand sumneko-lua.install. Preferred over coc-lua, which
+			-- last shipped in 2023.
+			'coc-sumneko-lua',
 		}
 
 		-- Inside a snippet session coc maps these keys buffer-locally to jump
@@ -193,7 +197,14 @@ return {
 		-- Rename symbol, code-action menu, and apply the preferred quickfix for the
 		-- diagnostic on the current line
 		vim.keymap.set('n', '<Leader>rn', '<Plug>(coc-rename)', { remap = true })
-		vim.keymap.set('n', '<Leader>ca', '<Plug>(coc-codeaction-cursor)', { remap = true })
+		-- Actions for the whole line rather than <Plug>(coc-codeaction-cursor).
+		-- coc asks the server about a range and passes the diagnostics
+		-- intersecting it as context; -cursor sends an empty range at the
+		-- cursor, -line sends the line. Asking about the line means the
+		-- cursor's column stops mattering, which matches how nvim's native
+		-- vim.lsp.buf.code_action() behaves.
+		vim.keymap.set('n', '<Leader>ca', '<Plug>(coc-codeaction-line)', { remap = true })
+		vim.keymap.set('x', '<Leader>ca', '<Plug>(coc-codeaction-selected)', { remap = true })
 		vim.keymap.set('n', '<Leader>qf', '<Plug>(coc-fix-current)', { remap = true })
 
 		-- Format the buffer / organize imports on demand

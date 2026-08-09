@@ -92,6 +92,57 @@ vim.api.nvim_create_autocmd('ColorScheme', {
 	callback = unreverse_statusline,
 })
 
+-- Diagnostic gutter signs in the same four colors the statusline counters use,
+-- so an E/W/I/H segment and the sign marking the line it counts read as one
+-- thing. The values are gruvbox bright red/yellow/blue/aqua and must stay in
+-- step with palette.normal.{error,warning,info,hint} in autoload/statusline.vim;
+-- they don't follow the per-filetype colorscheme switch because the lightline
+-- theme they match is pinned to gruvbox.
+-- guibg=NONE keeps the gutter transparent, matching the SignColumn rule above,
+-- and gui=NONE clears attributes inherited through coc's default links (:hi
+-- merges rather than replaces).
+--
+-- The *VirtualText groups carry the message coc echoes past the end of the
+-- line, and the *Highlight groups are the squiggle under the offending code
+-- itself. All three surfaces share the four colors so severity reads the same
+-- wherever it appears: gutter icon, message, and underline.
+--
+-- The squiggles set only gui/guisp, leaving guifg alone so the code keeps its
+-- syntax colors and picks up just the colored undercurl. Terminals without
+-- curly-underline support draw a straight underline in the same color.
+--
+-- CocUnusedHighlight is the exception. coc gives unused symbols their own
+-- group, linked to CocFadeOut -> Conceal, and it outranks all four severity
+-- groups (see :help coc-highlights-diagnostic), which is why `unusedTotal`
+-- showed a gray underline rather than a hint-colored one. It keeps the faded
+-- gray foreground that marks a symbol as dead, and gains the hint undercurl --
+-- unused is reported as a Hint by lua_ls and tsserver alike.
+local function diagnostic_colors()
+	vim.cmd([[
+		highlight CocErrorSign   gui=NONE cterm=NONE guifg=#fb4934 guibg=NONE ctermfg=167 ctermbg=NONE
+		highlight CocWarningSign gui=NONE cterm=NONE guifg=#fabd2f guibg=NONE ctermfg=214 ctermbg=NONE
+		highlight CocInfoSign    gui=NONE cterm=NONE guifg=#83a598 guibg=NONE ctermfg=109 ctermbg=NONE
+		highlight CocHintSign    gui=NONE cterm=NONE guifg=#8ec07c guibg=NONE ctermfg=108 ctermbg=NONE
+
+		highlight CocErrorVirtualText   gui=NONE cterm=NONE guifg=#fb4934 guibg=NONE ctermfg=167 ctermbg=NONE
+		highlight CocWarningVirtualText gui=NONE cterm=NONE guifg=#fabd2f guibg=NONE ctermfg=214 ctermbg=NONE
+		highlight CocInfoVirtualText    gui=NONE cterm=NONE guifg=#83a598 guibg=NONE ctermfg=109 ctermbg=NONE
+		highlight CocHintVirtualText    gui=NONE cterm=NONE guifg=#8ec07c guibg=NONE ctermfg=108 ctermbg=NONE
+
+		highlight CocErrorHighlight   gui=undercurl cterm=undercurl guisp=#fb4934
+		highlight CocWarningHighlight gui=undercurl cterm=undercurl guisp=#fabd2f
+		highlight CocInfoHighlight    gui=undercurl cterm=undercurl guisp=#83a598
+		highlight CocHintHighlight    gui=undercurl cterm=undercurl guisp=#8ec07c
+
+		highlight! CocUnusedHighlight gui=undercurl cterm=undercurl guisp=#8ec07c guifg=#928374 ctermfg=245
+	]])
+end
+diagnostic_colors()
+vim.api.nvim_create_autocmd('ColorScheme', {
+	group = vim.api.nvim_create_augroup('DiagnosticColors', {}),
+	callback = diagnostic_colors,
+})
+
 -- Search matches: the match under the cursor (CurSearch) keeps the scheme's
 -- default reverse-video Search look; every other match is drawn as red
 -- underlined text on the plain background. Re-applied on ColorScheme because

@@ -24,7 +24,7 @@ return {
 					},
 					right = {
 						{ 'lineinfo' },
-						{ 'coc_errors', 'coc_warnings', 'coc_status' },
+						{ 'coc_errors', 'coc_warnings', 'coc_info', 'coc_hints', 'coc_status' },
 						{ 'percent' },
 						{ 'fileformat', 'tagbar', 'filetype' },
 					},
@@ -61,6 +61,11 @@ return {
 
 			vim.g['lightline#coc#indicator_warnings'] = 'W'
 			vim.g['lightline#coc#indicator_errors'] = 'E'
+			-- Info and hints alongside them: lua_ls reports unused-local as a Hint
+			-- and plenty of servers use Information, so without these the status
+			-- line stays empty for diagnostics the sign column is already showing.
+			vim.g['lightline#coc#indicator_info'] = 'I'
+			vim.g['lightline#coc#indicator_hints'] = 'H'
 
 			-- Fills in the coc_* entries of component_expand/component_type used by
 			-- the 'right' section above (the refresh autocmds live in the plugin
