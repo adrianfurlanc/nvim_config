@@ -1,6 +1,9 @@
 {
 	"diagnostic.virtualText": true,
 	"diagnostic.virtualTextCurrentLineOnly": false,
+	"diagnostic.floatConfig": {
+		"border": true
+	},
 	"prettier.documentSelectors": ["**/*.astro"],
 	"[astro]": {
 		"coc.preferences.formatOnSave": true

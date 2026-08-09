@@ -77,10 +77,107 @@ return {
 		vim.keymap.set('n', '[g', '<Plug>(coc-diagnostic-prev)', { silent = true, remap = true })
 		vim.keymap.set('n', ']g', '<Plug>(coc-diagnostic-next)', { silent = true, remap = true })
 
+		-- Pull up the diagnostic float on demand. coc shows it on its own once the
+		-- cursor rests on a diagnosed line (diagnostic.messageDelay, 200ms), so this
+		-- is for when you don't want to wait.
+		vim.keymap.set('n', '<Leader>d', function()
+			vim.fn.CocActionAsync('diagnosticInfo')
+		end, { silent = true, desc = 'Show diagnostics at cursor' })
+
 		-- Code navigation
 		vim.keymap.set('n', 'gd', '<Plug>(coc-definition)', { silent = true, remap = true })
 		vim.keymap.set('n', 'gy', '<Plug>(coc-type-definition)', { silent = true, remap = true })
-		vim.keymap.set('n', 'gr', '<Plug>(coc-references)', { silent = true, remap = true })
+
+		-- Browse coc's locations in an fzf-lua picker.
+		--
+		-- fzf-lua's own LSP pickers are unusable here: they read Neovim's native
+		-- vim.lsp client state, which coc never populates -- it keeps locations in
+		-- its own store. So ask coc for the locations, format them exactly the way
+		-- fzf-lua's pickers format theirs (make_entry.lcol -> make_entry.file), and
+		-- hand the list to fzf_exec. Normalizing against the 'lsp' defaults gets us
+		-- the builtin previewer, file icons and the standard file actions (<CR>
+		-- edit, <C-s>/<C-v>/<C-t> splits, <C-q> to quickfix) for free.
+		--
+		-- 'action' is any coc action returning locations: 'references',
+		-- 'definitions', 'implementations', 'typeDefinitions'.
+		local function coc_locations(action, title)
+			if vim.g.coc_service_initialized ~= 1 then
+				vim.notify('coc.nvim is not ready yet', vim.log.levels.WARN)
+				return
+			end
+
+			local fzf = require('fzf-lua')
+			local config = require('fzf-lua.config')
+			local make_entry = require('fzf-lua.make_entry')
+
+			local opts = config.normalize_opts({
+				prompt = '> ',
+				winopts = { title = ' ' .. title .. ' ' },
+			}, 'lsp')
+
+			-- Source line for each hit, read once per file. Loaded buffers win over
+			-- the file on disk so unwritten edits show the line as it is now.
+			local cache = {}
+			local function line_at(filename, lnum)
+				local lines = cache[filename]
+				if lines == nil then
+					local bufnr = vim.fn.bufnr(filename)
+					if bufnr > 0 and vim.api.nvim_buf_is_loaded(bufnr) then
+						lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+					elseif vim.fn.filereadable(filename) == 1 then
+						lines = vim.fn.readfile(filename)
+					else
+						lines = {}
+					end
+					cache[filename] = lines
+				end
+				return lines[lnum] or ''
+			end
+
+			-- Lua functions reach vimscript as Funcrefs, which is what
+			-- CocActionAsync takes as its trailing callback: Cb(err, result).
+			vim.fn.CocActionAsync(action, function(err, locations)
+				vim.schedule(function()
+					if err ~= nil and err ~= vim.NIL and err ~= '' then
+						vim.notify(('coc %s failed: %s'):format(action, tostring(err)), vim.log.levels.ERROR)
+						return
+					end
+					if locations == nil or locations == vim.NIL or vim.tbl_isempty(locations) then
+						vim.notify('No ' .. title:lower() .. ' found', vim.log.levels.INFO)
+						return
+					end
+
+					local entries = {}
+					for _, loc in ipairs(locations) do
+						-- Servers may answer with either Location or LocationLink
+						local uri = loc.uri or loc.targetUri
+						local range = loc.range or loc.targetSelectionRange or loc.targetRange
+						if uri and range then
+							local filename = vim.uri_to_fname(uri)
+							local lnum = range.start.line + 1
+							local entry = make_entry.file(make_entry.lcol({
+								filename = filename,
+								lnum = lnum,
+								-- LSP counts columns from 0 in UTF-16 units; +1 matches
+								-- fzf-lua's byte columns except on lines with multibyte
+								-- text ahead of the hit, where it lands a little off.
+								col = range.start.character + 1,
+								text = line_at(filename, lnum),
+							}, opts), opts)
+							if entry then
+								table.insert(entries, entry)
+							end
+						end
+					end
+
+					fzf.fzf_exec(entries, opts)
+				end)
+			end)
+		end
+
+		vim.keymap.set('n', '<Leader>gr', function()
+			coc_locations('references', 'LSP References')
+		end, { silent = true, desc = 'References (coc -> fzf-lua)' })
 
 		-- Documentation for the symbol under the cursor; falls back to native K
 		-- ('keywordprg', i.e. :help) in buffers with no hover provider
