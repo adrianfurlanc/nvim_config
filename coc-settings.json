@@ -12,6 +12,12 @@
 	"[astro]": {
 		"coc.preferences.formatOnSave": true
 	},
+	"[javascript]": {
+		"coc.preferences.formatOnSave": true
+	},
+	"[css]": {
+		"coc.preferences.formatOnSave": true
+	},
 	"diagnostic-languageserver.filetypes": {
 		"astro": "stylelint",
 		"css": "stylelint"
