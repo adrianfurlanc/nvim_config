@@ -185,6 +185,38 @@ vim.api.nvim_create_user_command('W', function(opts)
 	require('sudo.write')(opts.bang and '!' or '')
 end, { bang = true, desc = 'Write the current file as root' })
 
+-- Lint the whole project into the quickfix list, asynchronously via
+-- vim-dispatch. The compilers these use are configured in after/compiler/.
+--
+-- :Lint runs every check that fits the current buffer's filetype and merges
+-- them into one list — .ts/.tsx get tsc and ESLint together, .astro gets
+-- astro check (the table lives in lua/functions.lua). It reports what it found
+-- when it finishes, including a tool that failed to run at all. The four below
+-- name a single check outright and hand the quickfix list to vim-dispatch.
+vim.api.nvim_create_user_command('Lint', function()
+	require('functions').lint_filetype()
+end, { desc = "Check the project with this filetype's tools (quickfix)" })
+
+vim.api.nvim_create_user_command('Eslint', function()
+	require('functions').lint('eslint')
+end, { desc = 'Lint the project with ESLint (quickfix)' })
+
+vim.api.nvim_create_user_command('Stylelint', function()
+	require('functions').lint('stylelint')
+end, { desc = 'Lint the project stylesheets with Stylelint (quickfix)' })
+
+-- Type-checks .ts/.tsx only — tsc skips .astro files as an unknown
+-- extension. Use :AstroCheck in an Astro project; this stays for plain
+-- TypeScript, and for when astro check is unavailable.
+vim.api.nvim_create_user_command('Typecheck', function()
+	require('functions').lint('tsc')
+end, { desc = 'Type-check the project with tsc (quickfix)' })
+
+-- Type-checks .astro components as well as .ts/.tsx.
+vim.api.nvim_create_user_command('AstroCheck', function()
+	require('functions').lint('astro')
+end, { desc = 'Type-check the project with astro check (quickfix)' })
+
 -- Open files in same directory as current file
 map('c', '%%', "<C-R>=fnameescape(expand('%:h')).'/'<cr>")
 

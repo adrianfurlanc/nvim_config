@@ -51,6 +51,231 @@ function M.preview(file)
 	end)
 end
 
+-- Whole-project checks into the quickfix list, behind the :Lint, :Eslint,
+-- :Stylelint, :Typecheck and :AstroCheck commands (see lua/config/keymaps.lua).
+-- coc only reports diagnostics for buffers that are actually open; these run
+-- the real CLI across the project and fill the quickfix list, which the
+-- <Up>/<Down>/<Left>/<Right> mappings already walk.
+
+-- Appended to the project root for tools that want file arguments rather than
+-- a directory. Kept here, keyed by compiler, so a target is described once:
+-- :Stylelint, :Lint and the merged runner all read it from this table.
+local target_glob = { stylelint = '/**/*.{css,astro,html}' }
+
+-- The project the current buffer belongs to, or nil (having said why).
+local function project_root()
+	local source = vim.api.nvim_buf_get_name(0)
+	if source == '' then
+		source = vim.uv.cwd()
+	end
+	local root = vim.fs.root(source, { 'package.json', '.git' })
+	if not root then
+		vim.notify('No package.json or .git above ' .. source, vim.log.levels.ERROR)
+	end
+	return root
+end
+
+-- Write the buffer first. Every one of these tools reads from disk, so an
+-- unsaved buffer gets checked in its last-written state — the errors you are
+-- looking at go unreported and the run looks like a false negative. This is
+-- what 'autowrite' does for :make; done explicitly here rather than by setting
+-- that option, which would also write on :next, :cnext and friends. :update is
+-- a no-op when the buffer is unmodified.
+--
+-- Only the current buffer, same as 'autowrite'. Use :wall first if other
+-- buffers in the project are also dirty.
+local function write_current_buffer()
+	if vim.api.nvim_buf_get_name(0) ~= '' and vim.bo.modified and vim.bo.buftype == '' then
+		vim.cmd('update')
+	end
+end
+
+-- Run one check through vim-dispatch, which owns the quickfix list for the
+-- duration. The target is passed to :Make instead of being baked into
+-- 'makeprg' so the compiler plugins stay project-agnostic, and it is
+-- shell-escaped because these projects live under ~/Desktop/Vibe Coding — an
+-- unquoted path with a space would be split into two arguments. Escaping also
+-- stops the shell expanding the glob, leaving stylelint to expand it.
+function M.lint(compiler)
+	local root = project_root()
+	if not root then
+		return
+	end
+	write_current_buffer()
+
+	vim.cmd('compiler ' .. compiler)
+	-- vim-dispatch is lazy-loaded on :Make (see lua/plugins/test.lua), so this
+	-- is also what pulls it in; it runs the build asynchronously and populates
+	-- the quickfix list when it finishes.
+	vim.cmd('Make ' .. vim.fn.shellescape(root .. (target_glob[compiler] or '')))
+end
+
+-- What :Lint runs for each filetype. Where several are listed it is because
+-- they do not overlap, and any one of them alone answers part of the question
+-- while looking like it answered all of it:
+--
+--   .ts/.tsx  tsc owns types and has no warning severity at all; the rules
+--             that do warn — unused bindings and friends — are ESLint's.
+--   .astro    `astro check` covers the frontmatter and reports all three
+--             severities, but only for TypeScript diagnostics. It is happy
+--             with a <style> tag whose `>` is missing, where ESLint reports
+--             the parse error and stylelint reports where the CSS then ran
+--             off the end. Three tools, three genuinely different answers.
+--
+-- They run concurrently, so a list costs about as long as its slowest tool.
+local checks_for_filetype = {
+	astro = { 'astro', 'eslint', 'stylelint' },
+	typescript = { 'tsc', 'eslint' },
+	typescriptreact = { 'tsc', 'eslint' },
+	javascript = { 'eslint' },
+	javascriptreact = { 'eslint' },
+	css = { 'stylelint' },
+	html = { 'stylelint' },
+}
+
+-- Read a compiler plugin's command and format without leaving them on the
+-- buffer: :compiler is the only way to source after/compiler/*.vim, but the
+-- merged runner below needs two of them at once and must not corrupt the
+-- buffer's own settings on the way through.
+local function compiler_spec(compiler)
+	local makeprg, errorformat = vim.bo.makeprg, vim.bo.errorformat
+	local name = vim.b.current_compiler
+	vim.cmd('compiler ' .. compiler)
+	local spec = { makeprg = vim.bo.makeprg, errorformat = vim.bo.errorformat }
+	vim.bo.makeprg, vim.bo.errorformat = makeprg, errorformat
+	vim.b.current_compiler = name
+	return spec
+end
+
+-- Build the merged list once every tool has finished, and say what happened.
+--
+-- Only valid entries are kept, which is also what filters each tool's banners
+-- and summary lines: vim-dispatch drops the errorformat's %-G catch-all (its
+-- stored format for after/compiler/astro.vim is the first pattern only), so
+-- unmatched lines would otherwise arrive as || noise.
+--
+-- A tool that exits non-zero having produced nothing parseable did not lint —
+-- it failed to start. That is reported separately and loudly, because the
+-- alternative is an empty quickfix list, which reads exactly like a clean
+-- project. Both of those looked identical before this said so out loud.
+local function report(results)
+	local items, failures, names = {}, {}, {}
+	-- One entry per line of a file, whichever tool reported it. A syntax error
+	-- makes a parser resynchronise and complain again a few tokens later: a
+	-- missing "im" in `import` gets tsc to report "Unexpected keyword or
+	-- identifier" at three columns of line 1, and ESLint to report its own
+	-- "Parsing error" on the same line. One mistake, four entries to walk past.
+	--
+	-- Whatever arrives first wins, which is the first tool in the filetype's
+	-- list — tsc before ESLint, so a line carrying both keeps the type error
+	-- and its precise message rather than ESLint's summary of the same thing.
+	--
+	-- The cost is that a line with two genuinely different problems reports
+	-- only the first: common in CSS, where several rules can fail on one
+	-- declaration. Key on `.. ':' .. item.text` as well to get those back.
+	local seen = {}
+	for _, result in ipairs(results) do
+		names[#names + 1] = result.compiler
+		local output = (result.done.stdout or '') .. (result.done.stderr or '')
+		local lines = vim.split(output, '\n', { trimempty = true })
+		local parsed = vim.fn.getqflist({ lines = lines, efm = result.spec.errorformat }).items
+		local kept = 0
+		for _, item in ipairs(parsed) do
+			if item.valid == 1 then
+				kept = kept + 1
+				local key = item.bufnr .. ':' .. item.lnum
+				if not seen[key] then
+					seen[key] = true
+					items[#items + 1] = item
+				end
+			end
+		end
+		if kept == 0 and result.done.code ~= 0 then
+			-- The first line mentioning an error, not simply the first line:
+			-- npm leads with "npm warn exec The following package was not
+			-- found and will be installed", and buries "npx canceled due to
+			-- missing packages" — the half that says what to do — underneath.
+			local detail = ''
+			for _, line in ipairs(lines) do
+				if line:lower():find('error') then
+					detail = line
+					break
+				end
+			end
+			if detail == '' then
+				detail = lines[1] or '(no output)'
+			end
+			failures[#failures + 1] = result.compiler .. ' exited ' .. result.done.code .. ': ' .. detail
+		end
+	end
+
+	local title = table.concat(names, ' + ')
+	vim.fn.setqflist({}, ' ', { title = title, items = items })
+	vim.cmd('cwindow')
+	-- :cwindow leaves the cursor in the quickfix window; go back to the code,
+	-- the way vim-dispatch does after its own :copen.
+	if vim.bo.buftype == 'quickfix' then
+		vim.cmd('wincmd p')
+	end
+
+	if #failures > 0 then
+		vim.notify(table.concat(failures, '\n'), vim.log.levels.WARN)
+	elseif #items == 0 then
+		vim.notify(title .. ': no problems', vim.log.levels.INFO)
+	else
+		vim.notify(title .. ': ' .. #items .. ' problem' .. (#items == 1 and '' or 's'), vim.log.levels.INFO)
+	end
+end
+
+-- Run every check for the current buffer's filetype and merge them into one
+-- quickfix list. Nothing is guessed when the filetype isn't in the table above
+-- — a check picked at random is worse than none, since a clean list would then
+-- read as "no problems".
+--
+-- These go through vim.system() rather than :Make because dispatch owns the
+-- whole quickfix list per run: a second :Make would replace the first one's
+-- results, and chaining them would flash the window open, shut and open again.
+-- Run together here they also run concurrently, so two tools cost about as
+-- long as the slower one. The jobs deliberately inherit nvim's directory
+-- rather than being given the root: tools report paths relative to where they
+-- run, and the quickfix list resolves them relative to nvim, so the two have
+-- to agree — which is also what :Make does.
+function M.lint_filetype()
+	local ft = vim.bo.filetype
+	local compilers = checks_for_filetype[ft]
+	if not compilers then
+		vim.notify(
+			'No check configured for filetype ' .. (ft ~= '' and ft or '(none)')
+				.. ' — :Eslint, :Stylelint, :Typecheck and :AstroCheck run one directly',
+			vim.log.levels.WARN
+		)
+		return
+	end
+
+	local root = project_root()
+	if not root then
+		return
+	end
+	write_current_buffer()
+
+	local results, pending = {}, #compilers
+	for i, compiler in ipairs(compilers) do
+		local spec = compiler_spec(compiler)
+		local command = spec.makeprg .. ' ' .. vim.fn.shellescape(root .. (target_glob[compiler] or ''))
+		vim.system({ vim.o.shell, '-c', command }, { text = true }, function(done)
+			results[i] = { compiler = compiler, spec = spec, done = done }
+			pending = pending - 1
+			if pending == 0 then
+				-- vim.system's callback runs in a fast event context, where
+				-- neither the quickfix calls nor vim.notify are allowed.
+				vim.schedule(function()
+					report(results)
+				end)
+			end
+		end)
+	end
+end
+
 -- Switch to plaintext mode with: require('functions').plaintext()
 function M.plaintext()
 	vim.opt_local.linebreak = true
