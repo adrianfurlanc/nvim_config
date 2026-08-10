@@ -28,6 +28,13 @@ if exists(':CompilerSet') != 2
   command -nargs=* CompilerSet setlocal <args>
 endif
 
+" Every bundled compiler sets this, and :compiler moves it to b:current_compiler
+" — but there is no bundled astro.vim underneath this one to do it, so it has to
+" be set here. vim-dispatch reads it: it titles the :Make window after the
+" compiler and stores it on the request, restoring it on the quickfix buffer
+" (autoload/dispatch.vim). Left unset, a run shows up as a generic "make".
+let current_compiler = "astro"
+
 " Built from stdpath() so the path is right wherever the config is checked out,
 " and escaped in case that path ever contains a space. No $*: with none, :make
 " appends its argument (the project root) at the end, which is where the
