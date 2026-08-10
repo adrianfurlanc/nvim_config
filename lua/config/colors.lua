@@ -115,6 +115,63 @@ vim.api.nvim_create_autocmd('ColorScheme', {
 	callback = search_colors,
 })
 
+-- Quickfix window ($VIMRUNTIME/syntax/qf.vim), which the :Lint, :Stylelint,
+-- :Typecheck and :AstroCheck commands fill (see lua/functions.lua). Three of
+-- its groups don't come from the colorscheme at all and look it:
+--
+--   - qfSeparator1/2 link to Delimiter, which neither scheme defines, so the
+--     `|` bars fall back to nvim's built-in NvimLightGrey2.
+--   - QuickFixLine isn't defined by either scheme either, so the entry under
+--     the cursor is drawn in nvim's built-in NvimLightCyan.
+--   - qfError links to Error, which gruvbox defines as bold,reverse — the
+--     word "error" comes out as a filled red block on every line.
+--
+-- Defined outright below from each scheme's own palette: the path in blue,
+-- the bars and the line/column in the muted grays, and the severity word in
+-- flat colored text on the plain background — the same treatment Search gets
+-- above, rather than reverse video. qfWarning/qfNote/qfInfo have no default
+-- link at all (they render as plain message text); `astro check` reports
+-- warnings and hints, so they get palette colors too.
+--
+-- guifg=NONE on QuickFixLine and gui=NONE on qfError are load-bearing:
+-- :highlight merges, so without them the built-in cyan foreground and
+-- gruvbox's reverse attribute survive underneath these values.
+--
+-- Re-applied on ColorScheme because :colorscheme runs `hi clear` first, and
+-- because the two schemes need different palettes.
+local function quickfix_colors()
+	if (vim.g.colors_name or '') == 'OceanicNext' then
+		vim.cmd([[
+			highlight qfFileName   gui=NONE cterm=NONE guifg=#6699cc guibg=NONE ctermfg=68  ctermbg=NONE
+			highlight qfSeparator1 gui=NONE cterm=NONE guifg=#4f5b66 guibg=NONE ctermfg=240 ctermbg=NONE
+			highlight qfSeparator2 gui=NONE cterm=NONE guifg=#4f5b66 guibg=NONE ctermfg=240 ctermbg=NONE
+			highlight qfLineNr     gui=NONE cterm=NONE guifg=#65737e guibg=NONE ctermfg=243 ctermbg=NONE
+			highlight qfError      gui=NONE cterm=NONE guifg=#ec5f67 guibg=NONE ctermfg=203 ctermbg=NONE
+			highlight qfWarning    gui=NONE cterm=NONE guifg=#fac863 guibg=NONE ctermfg=221 ctermbg=NONE
+			highlight qfNote       gui=NONE cterm=NONE guifg=#5fb3b3 guibg=NONE ctermfg=73  ctermbg=NONE
+			highlight qfInfo       gui=NONE cterm=NONE guifg=#99c794 guibg=NONE ctermfg=114 ctermbg=NONE
+			highlight QuickFixLine gui=NONE cterm=NONE guifg=NONE    guibg=#4f5b66 ctermfg=NONE ctermbg=240
+		]])
+	else
+		vim.cmd([[
+			highlight qfFileName   gui=NONE cterm=NONE guifg=#83a598 guibg=NONE ctermfg=109 ctermbg=NONE
+			highlight qfSeparator1 gui=NONE cterm=NONE guifg=#665c54 guibg=NONE ctermfg=241 ctermbg=NONE
+			highlight qfSeparator2 gui=NONE cterm=NONE guifg=#665c54 guibg=NONE ctermfg=241 ctermbg=NONE
+			highlight qfLineNr     gui=NONE cterm=NONE guifg=#928374 guibg=NONE ctermfg=245 ctermbg=NONE
+			highlight qfError      gui=NONE cterm=NONE guifg=#fb4934 guibg=NONE ctermfg=167 ctermbg=NONE
+			highlight qfWarning    gui=NONE cterm=NONE guifg=#fabd2f guibg=NONE ctermfg=214 ctermbg=NONE
+			highlight qfNote       gui=NONE cterm=NONE guifg=#8ec07c guibg=NONE ctermfg=108 ctermbg=NONE
+			highlight qfInfo       gui=NONE cterm=NONE guifg=#b8bb26 guibg=NONE ctermfg=142 ctermbg=NONE
+			highlight QuickFixLine gui=NONE cterm=NONE guifg=NONE    guibg=#504945 ctermfg=NONE ctermbg=239
+		]])
+	end
+end
+quickfix_colors()
+vim.api.nvim_create_autocmd('ColorScheme', {
+	group = vim.api.nvim_create_augroup('QuickfixColors', {}),
+	callback = quickfix_colors,
+})
+
 -- Bright cursor for contrast against the dark background, in every mode:
 -- block in normal/visual, thin bar in insert, underline in replace and
 -- operator-pending. All use the Cursor group below (nvim relays the color
