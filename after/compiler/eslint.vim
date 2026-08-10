@@ -1,5 +1,6 @@
-" Overrides for the ESLint compiler plugin. Invoked by :Lint (see
-" lua/functions.lua), which supplies the path to lint as a :Make argument.
+" Overrides for the ESLint compiler plugin. Invoked by :Eslint, and by :Lint
+" in a .js/.jsx buffer (see lua/functions.lua), which supplies the path to
+" lint as a :Make argument.
 "
 " Two things need fixing, which is why this exists at all:
 "

@@ -4,16 +4,47 @@ Reference for the compiler plugins in this directory. Each one overrides part
 of a compiler bundled with nvim (`$VIMRUNTIME/compiler/`) — see the comment at
 the top of each file for what it changes and why.
 
-They are driven by commands in `lua/config/keymaps.lua`, all of which go
-through `require('functions').lint()` — it finds the project root, selects the
-compiler, and hands the target to `:Make`:
+They are driven by commands in `lua/config/keymaps.lua`. Each of these names
+one compiler and goes through `require('functions').lint()`, which finds the
+project root, selects the compiler, and hands the target to `:Make`:
 
 | Command       | Compiler    | Covers                             |
 | ------------- | ----------- | ---------------------------------- |
-| `:Lint`       | `eslint`    | whatever `eslint.config.js` matches |
+| `:Eslint`     | `eslint`    | whatever `eslint.config.js` matches |
 | `:Stylelint`  | `stylelint` | `.css`, `.astro`, `.html`          |
 | `:Typecheck`  | `tsc`       | `.ts`/`.tsx` only                  |
 | `:AstroCheck` | `astro`     | `.astro` as well as `.ts`/`.tsx`   |
+
+`:Lint` instead runs everything that applies to the current buffer's filetype
+and merges it into one list, warning rather than guessing on a filetype it
+doesn't know. The table is `checks_for_filetype` in `lua/functions.lua`:
+
+| Filetype           | Runs               |
+| ------------------ | ------------------ |
+| `astro`            | `astro`, `eslint` **and** `stylelint` |
+| `typescript(react)`| `tsc` **and** `eslint` |
+| `javascript(react)`| `eslint`           |
+| `css`, `html`      | `stylelint`        |
+
+Several are listed where the tools don't overlap, and any one alone answers
+part of the question while looking like it answered all of it. `.ts`/`.tsx`:
+tsc owns types and has no warning severity at all, while the rules that do
+warn — unused bindings and the like — are ESLint's. `.astro`: `astro check`
+covers the frontmatter and reports all three severities, but only for
+TypeScript diagnostics; given a `<style>` tag missing its `>` it reports
+nothing at all, while ESLint reports the parse error and stylelint reports
+where the CSS then ran off the end of the file.
+
+That merged path runs the tools with `vim.system()` rather than `:Make`,
+concurrently, and parses each one's output with its own `errorformat` before
+combining. Dispatch owns the entire quickfix list per run, so a second `:Make`
+would replace the first one's results. It also keeps only valid entries, which
+is what discards banners and summaries — see the `%-G` note below.
+
+Unlike `:Make`, it says what happened when it finishes: how many problems, or
+which tool exited non-zero without producing anything parseable. An empty
+quickfix list means either "clean" or "the tool never ran", and those are worth
+telling apart.
 
 `astro.vim` overrides nothing — nvim ships no astro compiler — but lives here
 so all four sit together.

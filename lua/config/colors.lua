@@ -115,8 +115,9 @@ vim.api.nvim_create_autocmd('ColorScheme', {
 	callback = search_colors,
 })
 
--- Quickfix window ($VIMRUNTIME/syntax/qf.vim), which the :Lint, :Stylelint,
--- :Typecheck and :AstroCheck commands fill (see lua/functions.lua). Three of
+-- Quickfix window ($VIMRUNTIME/syntax/qf.vim), which the :Lint, :Eslint,
+-- :Stylelint, :Typecheck and :AstroCheck commands fill (see
+-- lua/functions.lua). Three of
 -- its groups don't come from the colorscheme at all and look it:
 --
 --   - qfSeparator1/2 link to Delimiter, which neither scheme defines, so the
