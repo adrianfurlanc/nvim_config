@@ -70,6 +70,12 @@ return {
 		},
 		opts = {
 			options = {
+				-- Inert while separator_style is a slant: bufferline draws the
+				-- indicator as blank padding under slant/slope, so the current
+				-- buffer is marked by the tab shape and its lighter background
+				-- instead. Kept because it takes effect again the moment the
+				-- slant is dropped.
+				--
 				-- The ▎ glyph, not the 'underline' indicator style. An underline
 				-- is a text attribute, and bufferline changes attributes several
 				-- times across a single tab (the name is bold and italic, the
@@ -79,6 +85,13 @@ return {
 				-- attributes did not fix it. A printed glyph has none of that
 				-- to go wrong.
 				indicator = { style = 'icon', icon = '▎' },
+				-- Triangular separators, so the tabs read as tabs rather than
+				-- as names divided by a rule. Needs the patched font that is
+				-- already drawing the devicons and lightline's own powerline
+				-- separators. If the glyphs come out clipped or overlapped,
+				-- 'padded_slant' is the same shape with the padding some
+				-- terminals need.
+				separator_style = 'slant',
 				-- No diagnostic counts up here: the gutter signs and the
 				-- lightline coc_* components already report them.
 				diagnostics = false,
