@@ -1,9 +1,9 @@
 -- Lightline and the plugins feeding its components. The component functions
 -- live in autoload/statusline.vim so they are only loaded on first redraw.
 --
--- 'enable.tabline' is off because the tabline is rendered by lua/tabline.lua
--- instead (see the bottom of lua/config/options.lua); lightline defaults it
--- to 1 and would otherwise clobber 'tabline' on init.
+-- 'enable.tabline' is off because bufferline.nvim renders the tabline instead
+-- (see lua/plugins/ui.lua); lightline defaults it to 1 and would otherwise
+-- clobber 'tabline' on init.
 return {
 	{
 		'itchyny/lightline.vim', -- Light and configurable statusline/tabline plugin
@@ -20,7 +20,6 @@ return {
 					left = {
 						{ 'mode', 'paste' },
 						{ 'fugitive', 'realpath', 'readonly', 'modified' },
-						{ 'bufferline' },
 					},
 					right = {
 						{ 'lineinfo' },
@@ -32,7 +31,6 @@ return {
 				component = {
 					tagbar = '%{tagbar#currenttag("%s", "", "f")}',
 					realpath = '%f',
-					bufferline = '%{bufferline#refresh_status()}%{g:bufferline_status_info.before . g:bufferline_status_info.current . g:bufferline_status_info.after}',
 				},
 				component_function = {
 					fugitive = 'statusline#fugitive',
@@ -91,15 +89,6 @@ return {
 				pattern = 'FugitiveChanged',
 				callback = function() vim.fn['statusline#update_git_status']() end,
 			})
-		end,
-	},
-	{
-		'bling/vim-bufferline', -- View open buffers in cmd bar
-		init = function()
-			-- Don't echo the buffer list to the command bar: its CursorHold echo
-			-- (firing after 'updatetime', which coc lowers to 300ms) overwrites
-			-- any command-line output, e.g. :messages.
-			vim.g.bufferline_echo = 0
 		end,
 	},
 }

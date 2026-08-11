@@ -49,6 +49,25 @@ return {
 		end,
 	},
 	{
+		-- Owns 'tabline'. Lightline is told to keep its hands off it in
+		-- lua/plugins/lightline.lua (g:lightline.enable.tabline), and this
+		-- replaced the buffer list bling/vim-bufferline used to render inside
+		-- the statusline. Open tab pages still show, as numbered indicators on
+		-- the right-hand end of the bar.
+		'akinsho/bufferline.nvim', -- Open buffers as clickable tabs along the top
+		dependencies = { 'nvim-tree/nvim-web-devicons' },
+		opts = {
+			options = {
+				-- No diagnostic counts up here: the gutter signs and the
+				-- lightline coc_* components already report them.
+				diagnostics = false,
+				-- Sit the buffer tabs beside the NERDTree pane rather than
+				-- running the full width across the top of it.
+				offsets = { { filetype = 'nerdtree', text = 'File Explorer' } },
+			},
+		},
+	},
+	{
 		'folke/which-key.nvim', -- Pops up a panel of available mappings after a pending prefix key
 		event = 'VeryLazy',
 		opts = {},
