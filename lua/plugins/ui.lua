@@ -120,6 +120,66 @@ return {
 		end,
 	},
 	{
+		'folke/todo-comments.nvim', -- Highlight TODO/FIX/NOTE keywords, and collect them into a list
+		dependencies = { 'nvim-lua/plenary.nvim' },
+		-- The highlighting has to be up when the file appears, so this loads
+		-- with the buffer rather than waiting for the mapping below.
+		event = { 'BufReadPost', 'BufNewFile' },
+		keys = {
+			-- Joins the <leader>f* finder family in lua/plugins/fzf.lua: the
+			-- plugin ships an fzf-lua picker of its own, so the hits land in the
+			-- same window every other search here uses. :TodoQuickFix puts the
+			-- same list in the quickfix instead, which <Up>/<Down> step through.
+			{ '<leader>ft', '<cmd>TodoFzfLua<cr>', desc = 'Find TODOs' },
+			-- No ]t/[t to walk between them: vim-unimpaired already owns that
+			-- pair for :tnext/:tprevious (MapNextFamily('t', ...)).
+		},
+		opts = {
+			-- No gutter icons. The sign column is one column wide and coc's (see
+			-- lua/plugins/coc.lua); coc's diagnostic priority of 10 beats this
+			-- plugin's 8, so these would be the icons dropped -- and on a line
+			-- carrying both, the diagnostic is the one worth the space. The
+			-- keyword is highlighted in the text itself regardless.
+			signs = false,
+			highlight = {
+				-- 'wide', the default, paints the background of the keyword and
+				-- the characters around it, so `-- NOTE:` comes out as a filled
+				-- block starting back at the comment leader. 'bg' keeps the block
+				-- on the word.
+				keyword = 'bg',
+				-- Nothing after the keyword, a deliberate departure from the
+				-- default 'fg'. This config annotates with NOTE: constantly and
+				-- those notes run for paragraphs -- and with 'multiline' on (also
+				-- a default) colouring what follows the keyword would tint whole
+				-- explanations rather than a phrase. The keyword marks the line;
+				-- the prose stays comment-coloured.
+				after = '',
+			},
+			-- Every one of these is pinned to a gruvbox bright value, and all six
+			-- have to be. The first four are the severity colors the coc signs
+			-- and the lightline counters already use (lua/config/colors.lua):
+			-- left alone they resolve through DiagnosticError/Warn/Info/Hint,
+			-- which nvim defines itself in its own palette, so a FIX: would come
+			-- out a red belonging to no colorscheme here.
+			--
+			-- 'default' (what PERF/OPTIM fall back to, having no color of their
+			-- own) and 'test' are the ones that actually bite. Both ship as
+			-- { 'Identifier', <hex> }, and the hex -- purple, magenta -- is only
+			-- reached when Identifier is undefined, which it never is. gruvbox
+			-- defines Identifier as #83a598, so PERF, TEST and TODO all came out
+			-- the same blue. Purple and green are the two bright values the four
+			-- above leave free.
+			colors = {
+				error = { '#fb4934' },
+				warning = { '#fabd2f' },
+				info = { '#83a598' },
+				hint = { '#8ec07c' },
+				default = { '#d3869b' },
+				test = { '#b8bb26' },
+			},
+		},
+	},
+	{
 		'luochen1990/rainbow', -- Rainbow parentheses — colors nested brackets by depth for easier reading
 		init = function()
 			vim.g.rainbow_active = 1
