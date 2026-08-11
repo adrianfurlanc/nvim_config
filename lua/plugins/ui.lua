@@ -43,10 +43,80 @@ end
 
 return {
 	{
-		'Yggdroot/indentLine', -- Display thin vertical lines at each indentation level for code indented with spaces
-		init = function()
-			vim.g.indentLine_fileTypeExclude = { 'help' }
-			vim.g.indentLine_bufNameExclude = { 'NERD_tree.*' }
+		-- Replaced Yggdroot/indentLine, which drew its guides through 'conceal':
+		-- it set conceallevel/concealcursor on every buffer, the same mechanism
+		-- markdown and json syntax use to hide their own punctuation, so the two
+		-- fought over quotes and link brackets. This one draws with extmark
+		-- virtual text and sets no options at all.
+		'lukas-reineke/indent-blankline.nvim', -- Thin vertical line at each indentation level
+		event = { 'BufReadPost', 'BufNewFile' },
+		opts = {
+			indent = {
+				-- The default is ▎, a half-width block that reads as a bar of
+				-- color at every level; │ is the thin rule indentLine drew and
+				-- stays further back behind the code.
+				char = '│',
+				-- tab_char is left unset, so the same │ stands in for tab
+				-- indentation -- which is most of it here, since 'expandtab' is
+				-- off unless vim-sleuth says otherwise for a given file.
+				--
+				-- ibl reads 'listchars' for tab_char only if 'list' is already on
+				-- when setup() runs, and it is off at startup, so the guide stays
+				-- │ afterwards either way. That includes while <leader>i has
+				-- 'list' on: the guide is overlaid virtual text and covers the ▸
+				-- listchars would have drawn in the indent. Trailing · and the ¬
+				-- at end of line are unaffected.
+			},
+			scope = {
+				-- Drawing the guide for the scope under the cursor in a brighter
+				-- color is the thing indentLine could not do, and most of the
+				-- reason for the swap -- it comes from treesitter, so it follows
+				-- the real block rather than counting columns.
+				--
+				-- The underlines it also wants to draw are off: they land on the
+				-- first and last line of the scope, one of which is usually the
+				-- line 'cursorline' is already marking.
+				show_start = false,
+				show_end = false,
+			},
+			-- The scope color is not set here but in the HIGHLIGHT_SETUP hook
+			-- below; see the note there for why it has to be.
+			--
+			-- No exclude list on purpose. The defaults already cover help, man
+			-- and gitcommit, and everything else worth skipping here -- NERDTree,
+			-- tagbar, undotree, quickfix, terminals -- is a 'nofile' buffer,
+			-- which the default buftype list excludes outright.
+			--
+			-- If one is ever needed: the merge is a per-index tbl_deep_extend, so
+			-- `filetypes = { 'foo' }` does not append to the defaults, it replaces
+			-- the first of them ('lspinfo') and silently keeps the other eight.
+		},
+		-- A config function rather than `main = 'ibl'` plus opts, because the
+		-- highlight hook has to be registered before setup() runs.
+		config = function(_, opts)
+			local hooks = require('ibl.hooks')
+
+			-- Left alone, ibl takes IblScope from LineNr -- gruvbox bg4,
+			-- #7c6f64 -- only one step up from the #504945 the inactive guides
+			-- inherit from Whitespace, so the block you are in barely reads as
+			-- different from the ones around it. #928374 is the next stop on
+			-- gruvbox's own neutral ramp (its `gray`, already carrying
+			-- InactiveText and unused symbols in lua/config/colors.lua):
+			-- clearly the brighter of the two at a glance, and still a gray
+			-- rather than a color, so it marks the block without pulling the
+			-- eye off the code.
+			--
+			-- A hook rather than a plain :highlight, because ibl copies IblScope
+			-- into the group it really draws with (@ibl.scope.char.1) while
+			-- setting itself up, and redoes that on every ColorScheme -- which
+			-- this config fires on each switch in and out of a markdown buffer.
+			-- The hook is what it re-runs each time; a highlight set anywhere
+			-- else is either read too late or wiped by the next `hi clear`.
+			hooks.register(hooks.type.HIGHLIGHT_SETUP, function()
+				vim.api.nvim_set_hl(0, 'IblScope', { fg = '#928374' })
+			end)
+
+			require('ibl').setup(opts)
 		end,
 	},
 	{
