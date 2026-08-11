@@ -177,6 +177,56 @@ vim.api.nvim_create_autocmd('ColorScheme', {
 	callback = search_colors,
 })
 
+-- flash.nvim's jump labels (lua/plugins/editing.lua). All four groups are
+-- defined here rather than left to the plugin, for two reasons:
+--
+--   - FlashBackdrop defaults to a link to Comment, and Comment is italic in
+--     this config (see the `hi Comment gui=italic` block above). The backdrop
+--     covers every line on screen, so the whole buffer flipped to italic for
+--     the duration of a jump. gui=NONE below is what stops that.
+--   - FlashLabel defaults to a link to Substitute -> Search, which is red on
+--     gruvbox. Against a warm palette full of reds and oranges the labels read
+--     as ordinary syntax, and since the default label.style is "overlay" (the
+--     label paints over the character after the match) they came out looking
+--     like typos in the code -- `const` rendered as `conbt`.
+--
+-- So the labels are given the one hue the code around them never uses --
+-- purple -- as a solid background with the window background as foreground,
+-- which no syntax group can be confused with. FlashCurrent (the match <CR>
+-- would take) gets the same treatment in yellow, matching CurSearch above,
+-- and FlashMatch stays deliberately quiet: it only needs to show where the
+-- other candidates are.
+--
+-- `highlight!` rather than `highlight` throughout: these groups are links by
+-- default, and a plain :highlight would merge attributes into the link target
+-- instead of replacing it. The plugin registers its own versions with
+-- `default`, which by definition never overrides the values set here.
+--
+-- Re-applied on ColorScheme because :colorscheme runs `hi clear` first, and
+-- because the two schemes need different palettes.
+local function flash_colors()
+	if (vim.g.colors_name or '') == 'OceanicNext' then
+		vim.cmd([[
+			highlight! FlashBackdrop gui=NONE cterm=NONE guifg=#4f5b66 guibg=NONE    ctermfg=240 ctermbg=NONE
+			highlight! FlashMatch    gui=NONE cterm=NONE guifg=#cdd3de guibg=#4f5b66 ctermfg=252 ctermbg=240
+			highlight! FlashCurrent  gui=bold cterm=bold guifg=#1b2b34 guibg=#fac863 ctermfg=235 ctermbg=221
+			highlight! FlashLabel    gui=bold cterm=bold guifg=#1b2b34 guibg=#c594c5 ctermfg=235 ctermbg=176
+		]])
+	else
+		vim.cmd([[
+			highlight! FlashBackdrop gui=NONE cterm=NONE guifg=#665c54 guibg=NONE    ctermfg=241 ctermbg=NONE
+			highlight! FlashMatch    gui=NONE cterm=NONE guifg=#ebdbb2 guibg=#504945 ctermfg=223 ctermbg=239
+			highlight! FlashCurrent  gui=bold cterm=bold guifg=#1d2021 guibg=#fabd2f ctermfg=234 ctermbg=214
+			highlight! FlashLabel    gui=bold cterm=bold guifg=#1d2021 guibg=#d3869b ctermfg=234 ctermbg=175
+		]])
+	end
+end
+flash_colors()
+vim.api.nvim_create_autocmd('ColorScheme', {
+	group = vim.api.nvim_create_augroup('FlashColors', {}),
+	callback = flash_colors,
+})
+
 -- Quickfix window ($VIMRUNTIME/syntax/qf.vim), which the :Lint, :Eslint,
 -- :Stylelint, :Typecheck and :AstroCheck commands fill (see
 -- lua/functions.lua). Three of

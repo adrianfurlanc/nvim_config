@@ -14,13 +14,43 @@ return {
 		end,
 	},
 	{
-		'justinmk/vim-sneak', -- Goto 2x characters
+		-- Replaces vim-sneak (s + 2 chars) and clever-f (f/F/t/T repeat with
+		-- f/F). Both behaviours survive: 'char' mode re-maps f/F/t/T so that
+		-- pressing the same key again advances to the next match, and 's'
+		-- still takes two characters — but every match now gets a label, so
+		-- you press the label instead of hammering 's' to cycle.
+		'folke/flash.nvim',
 		event = 'VeryLazy',
-		init = function()
-			vim.g['sneak#s_next'] = 1
-		end,
+		opts = {
+			-- The default style is "overlay", which paints the label over the
+			-- character following the match: `const` renders as `conbt`, so
+			-- the labels read as typos in the code. "inline" inserts them
+			-- instead, hiding nothing -- the line shifts right while the
+			-- labels are up. Colors for FlashLabel and friends are in
+			-- lua/config/colors.lua.
+			label = { style = 'inline' },
+			modes = {
+				-- Labelled '/' search is left off: wincent/loupe (see
+				-- lua/plugins/search.lua) already owns search highlighting
+				-- and 'shortmess', and flash's search mode also drives
+				-- hlsearch. Flip this to true to try them together; <C-s>
+				-- toggles flash on mid-search either way.
+				search = { enabled = false },
+			},
+		},
+		keys = {
+			{ 's', mode = { 'n', 'x', 'o' }, function() require('flash').jump() end, desc = 'Flash' },
+			-- Deliberately not mapped in visual mode: vim-surround owns
+			-- visual 'S' (surround the selection).
+			{ 'S', mode = { 'n', 'o' }, function() require('flash').treesitter() end, desc = 'Flash treesitter' },
+			-- Operator-pending only, so normal-mode 'r' (replace char) is
+			-- untouched. `yr` + label yanks a text object elsewhere on
+			-- screen without moving the cursor.
+			{ 'r', mode = 'o', function() require('flash').remote() end, desc = 'Remote flash' },
+			{ 'R', mode = { 'o', 'x' }, function() require('flash').treesitter_search() end, desc = 'Treesitter search' },
+			{ '<C-s>', mode = 'c', function() require('flash').toggle() end, desc = 'Toggle flash search' },
+		},
 	},
-	{ 'rhysd/clever-f.vim', event = 'VeryLazy' },              -- Extends f, F, t, T to repeat with f/F instead of semicolon, with highlighting
 	{ 'machakann/vim-highlightedyank', event = 'VeryLazy' },   -- Preview selected yanked text
 	{ 'tommcdo/vim-lion', event = 'VeryLazy' },                -- Aligns text to a character with the gl and gL operators
 	{ 'tpope/vim-commentary', event = 'VeryLazy' },            -- Toggle comments in vim

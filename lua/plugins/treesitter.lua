@@ -247,7 +247,7 @@ return {
 				swap.swap_previous('@parameter.inner')
 			end, 'Swap parameter with previous')
 
-			-- ;/, are deliberately not mapped to repeatable_move: vim-sneak
+			-- ;/, are deliberately not mapped to repeatable_move: flash.nvim
 			-- owns them, and ]m/[m already repeat themselves.
 		end,
 	},
