@@ -67,6 +67,11 @@ return {
 			-- 'sessionoptions' does not include globals.
 			{ '<leader>b<', '<cmd>BufferLineMovePrev<cr>', desc = 'Move buffer left' },
 			{ '<leader>b>', '<cmd>BufferLineMoveNext<cr>', desc = 'Move buffer right' },
+			-- Letters every visible tab and jumps to the one you type. Covers
+			-- the case <leader><leader> (fzf-lua buffers) is clumsy at: the
+			-- buffer is already on screen, so searching for it by name is more
+			-- work than looking at it. gb is free -- coc takes gd and gy.
+			{ 'gb', '<cmd>BufferLinePick<cr>', desc = 'Pick buffer' },
 		},
 		opts = {
 			options = {
