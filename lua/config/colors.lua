@@ -43,18 +43,29 @@ end
 
 -- Syntax groups that link to Normal (gruvbox's Operator, vim's vimUserFunc,
 -- ...) paint Normal's explicit guibg over NormalNC in non-current windows,
--- punching active-colored holes in the dimming. Break such links so those
--- tokens fall back to the window's own background.
+-- punching active-colored holes in the dimming. Clear such groups so those
+-- tokens fall back to the window's own foreground and background.
 local function clear_normal_links()
+	local group
 	for _, line in ipairs(vim.split(vim.fn.execute('silent highlight'), '\n')) do
-		if line:find(' links to Normal$') then
-			-- On nvim 0.9+ :highlight wraps long entries onto continuation
-			-- lines that start with whitespace; only lines that begin with
-			-- the group name carry the link we want to break.
-			local group = line:match('^%S+')
-			if group then
-				vim.cmd('highlight! link ' .. group .. ' NONE')
-			end
+		-- :highlight wraps long entries onto continuation lines that start
+		-- with whitespace, so a group's name and its `links to` clause can
+		-- land on separate lines. Operator does exactly that -- it carries
+		-- nvim's own default guifg alongside gruvbox's link -- and it is the
+		-- one group that matters here, since @operator and jsOperator both
+		-- reach Normal through it. Carrying the last name seen forward
+		-- attributes the continuation to the group it belongs to.
+		group = line:match('^(%S+)%s+xxx') or group
+		if group and line:find(' links to Normal$') then
+			-- Cleared outright rather than just unlinked: `highlight! link X
+			-- NONE` drops the link but restores the group's built-in default
+			-- (Operator's is guifg=NvimLightGrey2, a cooler gray than
+			-- gruvbox's #ebdbb2), so ==, ===, .. and && would still read as a
+			-- different color from the code around them. An empty group has
+			-- nothing to draw with and falls through to the window's own
+			-- Normal / NormalNC -- matching foreground, and no background to
+			-- punch a hole with.
+			vim.api.nvim_set_hl(0, group, {})
 		end
 	end
 end
