@@ -81,13 +81,6 @@ vim.opt.foldmethod = 'indent'
 vim.opt.foldlevelstart = 99                         -- Start with all folds open
 vim.opt.foldtext = [[v:lua.require'functions'.foldtext()]] -- Custom fold summary line
 
--- Custom tabline. The rendering functions live in lua/tabline.lua so they
--- are only loaded on first redraw.
---
--- Note: lightline would otherwise take over 'tabline' itself; it is told to
--- leave it alone in lua/plugins/lightline.lua (g:lightline.enable.tabline).
-vim.opt.tabline = [[%!v:lua.require'tabline'.line()]]
-
 -- Skip nvim's clipboard-provider auto-detection (probing $PATH and the
 -- environment at first use); on macOS we know it's pbcopy/pbpaste.
 vim.g.clipboard = {
