@@ -58,12 +58,31 @@ return {
 		dependencies = { 'nvim-tree/nvim-web-devicons' },
 		opts = {
 			options = {
+				-- The ▎ glyph, not the 'underline' indicator style. An underline
+				-- is a text attribute, and bufferline changes attributes several
+				-- times across a single tab (the name is bold and italic, the
+				-- icon and close button are forced plain), which this terminal
+				-- renders as a line under some runs and not others -- three
+				-- fragments with the name unmarked between them. Flattening the
+				-- attributes did not fix it. A printed glyph has none of that
+				-- to go wrong.
+				indicator = { style = 'icon', icon = '▎' },
 				-- No diagnostic counts up here: the gutter signs and the
 				-- lightline coc_* components already report them.
 				diagnostics = false,
 				-- Sit the buffer tabs beside the NERDTree pane rather than
 				-- running the full width across the top of it.
 				offsets = { { filetype = 'nerdtree', text = 'File Explorer' } },
+			},
+			highlights = {
+				-- gruvbox leaves the indicator at bg1 (#3c3836), near-invisible
+				-- against the selected tab's own #282828, so the default ▎ marks
+				-- nothing. Bright green is what the scheme already uses for
+				-- TabLineSel's text. Pinned rather than read back from the
+				-- scheme, matching the lightline theme and the diagnostic colors
+				-- in lua/config/colors.lua: markdown buffers switch to
+				-- OceanicNext, and the bar should not change color with them.
+				indicator_selected = { fg = '#b8bb26' },
 			},
 		},
 	},
