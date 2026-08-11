@@ -1,3 +1,46 @@
+-- Closing a buffer from the bufferline -- clicking its × or right-clicking the
+-- tab -- would otherwise run vim's :bdelete, which closes every window showing
+-- that buffer, tearing down a split you never asked it to touch. vim-bufkill's
+-- :BD deletes the buffer and leaves the window sitting on something else, which
+-- is the whole reason that plugin is in lua/plugins/editing.lua.
+--
+-- The two do not speak the same language: :BD takes no argument and acts on the
+-- current buffer, while bufferline hands over a bufnr. Hence this -- focus the
+-- window showing it, kill, come back.
+--
+-- The bang matters twice. It skips bufkill's "displayed in multiple windows"
+-- confirm(), which would otherwise stop a mouse click dead on a prompt, and it
+-- discards unsaved changes -- no worse than the bdelete! it replaces, but the ×
+-- is not a safe gesture on a modified buffer.
+--
+-- Known wart: with one buffer open in two windows, bufkill leaves one of them
+-- on a nameless empty buffer. Still the better trade -- :bdelete took three
+-- windows down to one in that same case.
+--
+-- Buffers that are not on screen skip all of it: no window can be destroyed, so
+-- plain :bdelete is already the right thing.
+local function bufkill_close(bufnr)
+	local win = vim.fn.win_findbuf(bufnr)[1]
+	if not win then return vim.cmd('bdelete! ' .. bufnr) end
+	-- vim-bufkill loads on VeryLazy, so :BD may not exist yet; pull it in
+	-- rather than error, and fall back if it cannot be had at all.
+	if vim.fn.exists(':BD') ~= 2 then
+		pcall(function() require('lazy').load({ plugins = { 'vim-bufkill' } }) end)
+	end
+	if vim.fn.exists(':BD') ~= 2 then return vim.cmd('bdelete! ' .. bufnr) end
+	local back = vim.api.nvim_get_current_win()
+	vim.api.nvim_set_current_win(win)
+	-- bufkill tracks each window's buffer history in w:BufKillList, built by
+	-- autocmds from the moment it loads, and errors outright on a window that
+	-- predates it. Never let that turn a click on × into a stack trace: fall
+	-- back to the behaviour we were replacing.
+	local killed = pcall(vim.cmd, 'BD!')
+	if vim.api.nvim_win_is_valid(back) then
+		vim.api.nvim_set_current_win(back)
+	end
+	if not killed then vim.cmd('bdelete! ' .. bufnr) end
+end
+
 return {
 	{
 		'Yggdroot/indentLine', -- Display thin vertical lines at each indentation level for code indented with spaces
@@ -75,6 +118,8 @@ return {
 		},
 		opts = {
 			options = {
+				close_command = bufkill_close,
+				right_mouse_command = bufkill_close,
 				-- Inert while separator_style is a slant: bufferline draws the
 				-- indicator as blank padding under slant/slope, so the current
 				-- buffer is marked by the tab shape and its lighter background
