@@ -56,6 +56,18 @@ return {
 		-- the right-hand end of the bar.
 		'akinsho/bufferline.nvim', -- Open buffers as clickable tabs along the top
 		dependencies = { 'nvim-tree/nvim-web-devicons' },
+		-- 'keys' would otherwise defer the plugin until one of them is pressed,
+		-- leaving 'tabline' unset until then; it has to be up before the first
+		-- redraw.
+		lazy = false,
+		keys = {
+			-- Reorder, not navigate: these move the current buffer along the
+			-- bar. The order holds for the session but is not written to a
+			-- session file -- bufferline stores it in a global, and
+			-- 'sessionoptions' does not include globals.
+			{ '<leader>b<', '<cmd>BufferLineMovePrev<cr>', desc = 'Move buffer left' },
+			{ '<leader>b>', '<cmd>BufferLineMoveNext<cr>', desc = 'Move buffer right' },
+		},
 		opts = {
 			options = {
 				-- The ▎ glyph, not the 'underline' indicator style. An underline
