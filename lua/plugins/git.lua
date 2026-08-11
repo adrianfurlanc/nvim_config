@@ -1,13 +1,11 @@
+-- No gutter diff plugin here on purpose. vim-gitgutter used to be, and
+-- gitsigns was tried in its place; both want the sign column, which coc
+-- already owns for its diagnostic icons ('signcolumn' is 'yes', one sign per
+-- line, and coc's priority of 10 beats either of them). The git workflow runs
+-- through fugitive below, where the diff is the point rather than a margin
+-- note: :Gstatus to stage, :Gdiffsplit to see the change, :Gblame for history.
+-- :VcsJump (vcs-jump, at the bottom) is what jumps to a changed hunk.
 return {
-	{
-		'airblade/vim-gitgutter', -- View git diff in gutter
-		event = 'VeryLazy',
-		config = function()
-			-- Loaded after the first buffer's BufEnter already fired, so kick
-			-- off one full pass by hand; from here its own autocmds take over.
-			vim.fn['gitgutter#all'](1)
-		end,
-	},
 	{
 		-- Stays eager: the lightline branch component (statusline#fugitive)
 		-- needs fugitive's buffer detection done by the first redraw.

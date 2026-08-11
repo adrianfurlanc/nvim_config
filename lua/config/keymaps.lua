@@ -105,8 +105,8 @@ map('n', '<leader>fc', [[/\v^[<|=>]{7}( .*|$)<CR>]])
 
 map('n', 'c*', '*Ncgn')
 
--- View changes in Gutter
-map('n', '<leader>G', ':GitGutterToggle<CR>')
+-- <leader>G is free: it toggled vim-gitgutter's signs, and there is no gutter
+-- diff plugin any more (see lua/plugins/git.lua).
 
 map('n', '<Leader>v', 'gv')
 

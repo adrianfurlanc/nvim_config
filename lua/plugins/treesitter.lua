@@ -220,10 +220,10 @@ return {
 
 			-- ]m/[m/]M/[M rather than the ]f/]c the README suggests: ]f/[f are
 			-- unimpaired's next/previous file in the directory, and ]c/[c are
-			-- gitgutter's hunk motions -- mapped <buffer> from its BufEnter
-			-- and guarded by `maparg(']c', 'n') ==# ''`, so taking them here
-			-- would not clash loudly, it would just stop gitgutter from ever
-			-- installing them. ]m/[m are vim's own "method start" motions,
+			-- vim's own next/previous change in a diff -- which is exactly what
+			-- you want them to be in :Gdiffsplit. (They were also vim-gitgutter's
+			-- hunk motions until that plugin was dropped; see
+			-- lua/plugins/git.lua.) ]m/[m are vim's own "method start" motions,
 			-- unmapped in this config and already the right mnemonic.
 			map({ 'n', 'x', 'o' }, ']m', function()
 				move.goto_next_start('@function.outer')
