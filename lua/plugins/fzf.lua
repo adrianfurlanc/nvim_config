@@ -3,10 +3,11 @@
 -- ~/.fzf git install kept on the runtimepath in lua/config/lazy.lua.
 return {
 	'ibhagwan/fzf-lua',
-	cmd = 'FzfLua',
+	cmd = { 'FzfLua', 'FzfDirectories' },
 	dependencies = { "nvim-tree/nvim-web-devicons" },
 	keys = {
 		{ '<leader>ff', '<cmd>FzfLua files<cr>', desc = 'Find files' },
+		{ '<leader>fd', '<cmd>FzfDirectories<cr>', desc = 'Find directories (oil)' },
 		{ '<leader>fg', '<cmd>FzfLua live_grep<cr>', desc = 'Live grep (rg)' },
 		{ '<leader>fh', '<cmd>FzfLua helptags<cr>', desc = 'Search help' },
 		{ '<leader>f/', '<cmd>FzfLua lgrep_curbuf<cr>', desc = 'Live grep current buffer' },
@@ -46,5 +47,31 @@ return {
 				}),
 			},
 		}
+	end,
+	-- setup() plus the one picker fzf-lua has no builtin for: directories.
+	-- The <leader>f* family finds files, buffers and text, but nothing jumps
+	-- to a directory by name; this lists them with fd and hands the pick to
+	-- oil, landing in the same directory buffer '-' would.
+	config = function(_, opts)
+		require('fzf-lua').setup(opts)
+		vim.api.nvim_create_user_command('FzfDirectories', function()
+			-- The listing comes from fd; without it fzf_exec would open an
+			-- empty picker with no indication why.
+			if vim.fn.executable('fd') ~= 1 then
+				return vim.notify('fd is not installed; :FzfDirectories needs it', vim.log.levels.WARN)
+			end
+			local cwd = vim.fn.getcwd()
+			require('fzf-lua').fzf_exec('fd --type d', {
+				prompt = require('fzf-lua.path').shorten(cwd) .. '> ',
+				cwd = cwd,
+				actions = {
+					['default'] = function(selected)
+						if selected and selected[1] then
+							require('oil').open(cwd .. '/' .. selected[1])
+						end
+					end,
+				},
+			})
+		end, { desc = 'Fuzzy-find directories, open the pick in oil' })
 	end,
 }
