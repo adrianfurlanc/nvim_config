@@ -104,7 +104,7 @@ function M.lint(compiler)
 	write_current_buffer()
 
 	vim.cmd('compiler ' .. compiler)
-	-- vim-dispatch is lazy-loaded on :Make (see lua/plugins/test.lua), so this
+	-- vim-dispatch is lazy-loaded on :Make (see lua/plugins/dispatch.lua), so this
 	-- is also what pulls it in; it runs the build asynchronously and populates
 	-- the quickfix list when it finishes.
 	vim.cmd('Make ' .. vim.fn.shellescape(root .. (target_glob[compiler] or '')))
