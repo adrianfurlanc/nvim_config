@@ -243,6 +243,17 @@ return {
 			-- 'sessionoptions' does not include globals.
 			{ '<leader>b<', '<cmd>BufferLineMovePrev<cr>', desc = 'Move buffer left' },
 			{ '<leader>b>', '<cmd>BufferLineMoveNext<cr>', desc = 'Move buffer right' },
+			-- Overrides unimpaired's ]b/[b, which are :bnext/:bprevious and so
+			-- walk buffers in buffer-number order. Once b< or b> has moved a
+			-- tab, that order no longer matches the bar and ]b lands somewhere
+			-- other than the tab to the right. Cycling through bufferline
+			-- instead follows what is on screen.
+			{ ']b', '<cmd>BufferLineCycleNext<cr>', desc = 'Next buffer' },
+			{ '[b', '<cmd>BufferLineCyclePrev<cr>', desc = 'Previous buffer' },
+			-- Same reasoning for unimpaired's ]B/[B (:blast/:bfirst): the ends
+			-- of the bar, not the highest and lowest buffer numbers.
+			{ ']B', '<cmd>BufferLineGoToBuffer -1<cr>', desc = 'Last buffer' },
+			{ '[B', '<cmd>BufferLineGoToBuffer 1<cr>', desc = 'First buffer' },
 			-- Letters every visible tab and jumps to the one you type. Covers
 			-- the case <leader><leader> (fzf-lua buffers) is clumsy at: the
 			-- buffer is already on screen, so searching for it by name is more
