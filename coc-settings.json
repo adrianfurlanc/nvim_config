@@ -15,6 +15,15 @@
 	"[javascript]": {
 		"coc.preferences.formatOnSave": true
 	},
+	"[javascriptreact]": {
+		"coc.preferences.formatOnSave": true
+	},
+	"[typescript]": {
+		"coc.preferences.formatOnSave": true
+	},
+	"[typescriptreact]": {
+		"coc.preferences.formatOnSave": true
+	},
 	"[css]": {
 		"coc.preferences.formatOnSave": true
 	},

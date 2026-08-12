@@ -2,18 +2,11 @@
 -- autocmds that call them are registered in plugin/autocmds.lua, and this
 -- module is only loaded the first time one of them fires).
 
-vim.g.WincentColorColumnBlacklist = { 'diff', 'undotree', 'nerdtree', 'qf' }
+vim.g.WincentColorColumnBlacklist = { 'diff', 'undotree', 'oil', 'qf' }
 vim.g.WincentCursorlineBlacklist = { 'command-t' }
 vim.g.WincentMkviewFiletypeBlacklist = { 'diff', 'hgcommit', 'gitcommit' }
 
 local M = {}
-
-function M.attempt_select_last_file()
-	local previous = vim.fn.expand('#:t')
-	if previous ~= '' then
-		vim.fn.search([[\v<]] .. previous .. [[>]])
-	end
-end
 
 function M.should_colorcolumn()
 	return not vim.tbl_contains(vim.g.WincentColorColumnBlacklist, vim.bo.filetype)

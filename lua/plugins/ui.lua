@@ -83,9 +83,12 @@ return {
 			-- below; see the note there for why it has to be.
 			--
 			-- No exclude list on purpose. The defaults already cover help, man
-			-- and gitcommit, and everything else worth skipping here -- NERDTree,
-			-- tagbar, undotree, quickfix, terminals -- is a 'nofile' buffer,
-			-- which the default buftype list excludes outright.
+			-- and gitcommit, and everything else worth skipping here -- tagbar,
+			-- undotree, quickfix, terminals -- is a 'nofile' buffer, which the
+			-- default buftype list excludes outright. oil is the one thing that
+			-- slips through: its buffers are 'acwrite', so no buftype rule
+			-- catches them. It needs no entry anyway -- a listing carries no
+			-- leading whitespace, so there is no indent for a guide to mark.
 			--
 			-- If one is ever needed: the merge is a per-index tbl_deep_extend, so
 			-- `filetypes = { 'foo' }` does not append to the defaults, it replaces
@@ -275,9 +278,10 @@ return {
 				-- No diagnostic counts up here: the gutter signs and the
 				-- lightline coc_* components already report them.
 				diagnostics = false,
-				-- Sit the buffer tabs beside the NERDTree pane rather than
-				-- running the full width across the top of it.
-				offsets = { { filetype = 'nerdtree', text = 'File Explorer' } },
+				-- No offsets. They exist to hold the tabline clear of a
+				-- sidebar pane, and there is no sidebar here: oil opens in
+				-- the window you ran '-' from, the same as NERDTree did
+				-- under the vinegar mapping this replaced.
 			},
 			highlights = {
 				-- gruvbox leaves the indicator at bg1 (#3c3836), near-invisible

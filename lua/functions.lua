@@ -104,7 +104,7 @@ function M.lint(compiler)
 	write_current_buffer()
 
 	vim.cmd('compiler ' .. compiler)
-	-- vim-dispatch is lazy-loaded on :Make (see lua/plugins/test.lua), so this
+	-- vim-dispatch is lazy-loaded on :Make (see lua/plugins/dispatch.lua), so this
 	-- is also what pulls it in; it runs the build asynchronously and populates
 	-- the quickfix list when it finishes.
 	vim.cmd('Make ' .. vim.fn.shellescape(root .. (target_glob[compiler] or '')))
@@ -366,24 +366,6 @@ function M.cycle_numbering()
 	local key = (vim.o.number and '1' or '0') .. (vim.o.relativenumber and '1' or '0')
 	vim.o.number = transitions[key].number
 	vim.o.relativenumber = transitions[key].relativenumber
-end
-
--- Load NERDTree on first use (it costs ~40ms at startup, mostly probing the
--- clipboard and $PATH, so it is marked lazy in lua/plugins/nerdtree.lua).
--- With a directory argument, hands that buffer to NERDTree's netrw hijack —
--- needed when the load is triggered by entering a directory buffer, because
--- NERDTree's own BufEnter autocmd was not yet installed when it fired.
-function M.load_nerdtree(dir)
-	if vim.g.loaded_nerd_tree then
-		return
-	end
-	-- NERDTree only removes netrw's directory-browse autocmds at VimEnter,
-	-- which has already passed; remove them here instead.
-	vim.cmd('silent! autocmd! FileExplorer')
-	require('lazy').load({ plugins = { 'nerdtree' } })
-	if dir and vim.fn.isdirectory(dir) == 1 then
-		vim.fn['nerdtree#checkForBrowse'](dir)
-	end
 end
 
 -- Auto-clearing of the message area (see plugin/autocmds.lua).
