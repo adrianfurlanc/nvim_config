@@ -1,3 +1,20 @@
+-- Filetypes emmet is mapped in. Astro is the whole surface of an Astro site:
+-- markup, scoped <style> and framework components all live in .astro files.
+-- The rest cover the pieces that grow out of it -- standalone stylesheets and
+-- island components in the frameworks this config already supports.
+local emmet_filetypes = {
+	'astro',
+	'css',
+	'html',
+	'javascriptreact',
+	'less',
+	'sass',
+	'scss',
+	'svelte',
+	'typescriptreact',
+	'vue',
+}
+
 return {
 	{ 'pangloss/vim-javascript' },  -- Vastly improved JavaScript indentation and syntax support
 	{ 'HerringtonDarkholme/yats.vim' }, -- TypeScript and TSX syntax highlighting and indentation
@@ -6,7 +23,30 @@ return {
 	{ 'evanleck/vim-svelte' },      -- Svelte component syntax and indentation (.svelte files)
 	{ 'wuelnerdotexe/vim-astro' },  -- Astro filetype detection, syntax highlighting and indentation (.astro files)
 	{ 'jxnblk/vim-mdx-js' },        -- MDX filetype detection and highlighting (markdown + JSX, .mdx files)
-	{ 'mattn/emmet-vim', event = 'InsertEnter' }, -- Emmet for web development; all its work starts in insert mode
+	{
+		-- Emmet abbreviation expansion (<C-y>, in insert mode), mapped only in
+		-- the filetypes above: install_global=0 stops the plugin from mapping
+		-- everywhere on load, and EmmetInstall adds the buffer-local mappings
+		-- where we want them.
+		--
+		-- astro, svelte and vue aren't filetypes emmet knows, so it works out
+		-- the language from the syntax tree at the cursor. lua/emmet_utils.lua
+		-- shadows the module it asks -- see the comment there -- so that CSS
+		-- abbreviations inside a scoped <style> block expand as CSS.
+		'mattn/emmet-vim',
+		ft = emmet_filetypes,
+		init = function()
+			vim.g.user_emmet_install_global = 0
+		end,
+		config = function()
+			-- lazy.nvim re-fires FileType for the triggering buffer after
+			-- config() runs, so this covers the first matching file too.
+			vim.api.nvim_create_autocmd('FileType', {
+				pattern = emmet_filetypes,
+				command = 'EmmetInstall',
+			})
+		end,
+	},
 
 	-- sgur/vim-editorconfig was dropped: nvim 0.9+ ships builtin .editorconfig
 	-- support (enabled by default; opt out with vim.g.editorconfig = false)
