@@ -13,8 +13,8 @@ return {
 		config = function()
 			-- Fugitive: allow navigating up in git tree with ..
 			-- (Lua callback wrapping vim.cmd on purpose: a `command` string
-			-- with `if ... | ... | endif` aborts the rest of the event's
-			-- autocmds on nvim 0.8.3, see lua/plugins/nerdtree.lua)
+			-- with `if ... | ... | endif` silently aborts every remaining
+			-- autocmd for that event on nvim 0.8.3)
 			vim.api.nvim_create_autocmd('User', {
 				pattern = 'fugitive',
 				callback = function()

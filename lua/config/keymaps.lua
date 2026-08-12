@@ -7,13 +7,8 @@ local map = vim.keymap.set
 
 -- NORMAL
 
--- Behave like vim-vinegar. Entering NERDTree on the parent folder.
--- NERDTree is lazy-loaded, so load it first (no-op once loaded).
-map('n', '-', function()
-	require('functions').load_nerdtree()
-	local target = vim.fn.expand('%') == '' and '.' or vim.fn.expand('%:p:h')
-	vim.cmd('silent edit ' .. vim.fn.fnameescape(target))
-end, { silent = true })
+-- '-' opens the parent directory (vim-vinegar style); it lives with the
+-- plugin that answers it, in lua/plugins/oil.lua.
 
 map('n', '<CR>', function()
 	if vim.bo.buftype == '' and vim.fn.reg_recorded() ~= '' then

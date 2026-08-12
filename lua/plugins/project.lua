@@ -10,9 +10,11 @@
 -- vim.lsp.buf_get_clients()/vim.lsp.start_client(), both deprecated in
 -- nvim 0.12 (still present, but on the way out).
 --
--- Note the overlap with NERDTreeChDirMode = 2 (lua/plugins/nerdtree.lua):
--- making a directory the tree root still chdirs there, but entering a file
--- buffer afterwards puts the CWD back at that file's project root.
+-- Sole owner of the CWD since NERDTree went. NERDTreeChDirMode = 2 used to
+-- chdir to whatever directory was made the tree root, which detection here
+-- then undid on the next file buffer anyway; oil does not chdir as it
+-- browses at all (its ` and ~ mappings do it on request), so nothing
+-- competes with the root found below.
 
 -- The recent-project picker behind <leader>fp. project.nvim ships a
 -- telescope extension, which is no use here, so the history is rendered
