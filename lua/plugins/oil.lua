@@ -29,6 +29,9 @@ return {
 			-- Take netrw's place, as NERDTreeHijackNetrw did, so that `nvim .`
 			-- and `:edit <dir>` land in oil.
 			default_file_explorer = true,
+			-- No confirmation prompt for a lone rename, create or move; a
+			-- delete, or any batch touching more than one file, still asks.
+			skip_confirm_for_simple_edits = true,
 			-- A delete stays recoverable from Finder. oil does not shell out
 			-- to a trash utility on macOS: lua/oil/adapters/trash/mac.lua
 			-- moves the entry into $HOME/.Trash itself, appending a timestamp
