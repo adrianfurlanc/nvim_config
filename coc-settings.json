@@ -1,4 +1,5 @@
 {
+	"coc.preferences.enableLinkedEditing": true,
 	"diagnostic.virtualText": true,
 	"diagnostic.virtualTextCurrentLineOnly": false,
 	"diagnostic.floatConfig": {
