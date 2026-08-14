@@ -53,7 +53,11 @@ return {
 	},
 	{ 'machakann/vim-highlightedyank', event = 'VeryLazy' },   -- Preview selected yanked text
 	{ 'tommcdo/vim-lion', event = 'VeryLazy' },                -- Aligns text to a character with the gl and gL operators
-	{ 'tpope/vim-commentary', event = 'VeryLazy' },            -- Toggle comments in vim
+	-- Commenting (gc/gcc) is built into Neovim 0.10+, so vim-commentary is
+	-- gone. ts-comments extends the native operator with treesitter-aware
+	-- comment strings, so markup inside .astro/JSX files gets <!-- --> or
+	-- {/* */} while the script parts keep //.
+	{ 'folke/ts-comments.nvim', opts = {}, event = 'VeryLazy' },
 	{ 'tpope/vim-eunuch', event = 'VeryLazy' },                -- Helpers for unix
 	{ 'tpope/vim-repeat', event = 'VeryLazy' },                -- Allow plugins to repeat
 	{ 'tpope/vim-surround', event = 'VeryLazy' },              -- Add/Change surround characters
