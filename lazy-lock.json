@@ -6,6 +6,7 @@
   "coc.nvim": { "branch": "release", "commit": "d1689a4876305e5fc6691910c8ee6f1eb5da2219" },
   "colorizer": { "branch": "master", "commit": "72790a003d5a706c287486a1a81e3a6b32158b54" },
   "delimitmate": { "branch": "master", "commit": "becbd2d353a2366171852387288ebb4b33a02487" },
+  "dial.nvim": { "branch": "master", "commit": "f2634758455cfa52a8acea6f142dcd6271a1bf57" },
   "emmet-vim": { "branch": "master", "commit": "92ef2f74f4093edc99db5e9e4cf7e40116a85bd6" },
   "flash.nvim": { "branch": "main", "commit": "b6346946d10d07998efee029fb0f7a593806d0cd" },
   "fzf-lua": { "branch": "main", "commit": "05e44d38de0a79c11fba5f7bf8138791b1dbdd1e" },
