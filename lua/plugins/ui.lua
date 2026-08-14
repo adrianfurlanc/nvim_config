@@ -183,10 +183,61 @@ return {
 		},
 	},
 	{
-		'luochen1990/rainbow', -- Rainbow parentheses — colors nested brackets by depth for easier reading
-		init = function()
-			vim.g.rainbow_active = 1
-		end,
+		-- Rainbow parentheses — colors nested brackets by depth so a closing one
+		-- can be matched to its opener by color.
+		--
+		-- Replaced luochen1990/rainbow, which did this with syntax regions: it
+		-- counted every literal bracket character in the text, so a `<` in a
+		-- comparison, or a brace inside a JSX string or a comment, opened a
+		-- level and shifted the colors of everything after it. This one reads
+		-- the syntax tree the highlighting already comes from, so only real
+		-- delimiters count -- and its astro/vue/svelte/html queries color
+		-- matching tag pairs too, not just brackets.
+		--
+		-- No dependency on the nvim-treesitter plugin: it calls core
+		-- vim.treesitter directly and ships its own
+		-- queries/<lang>/rainbow-delimiters.scm, so it is unaffected by the
+		-- main-branch pin in lua/plugins/treesitter.lua and by that file's
+		-- removal of the module system. All it wants is a parser, and the
+		-- parser list there covers every filetype it has a query for.
+		--
+		-- It also attaches independently of the scheduled vim.treesitter.start()
+		-- in treesitter.lua -- its own FileType autocmd builds the parser it
+		-- needs -- so a buffer gets rainbow delimiters even for a filetype that
+		-- file does not start treesitter highlighting for.
+		--
+		-- Colors are pinned in lua/config/colors.lua.
+		'HiPhish/rainbow-delimiters.nvim',
+		-- The repo's git submodules are test fixtures (other grammars, pulled in
+		-- to run its test suite); the README asks installers to skip them.
+		submodules = false,
+		-- Eager, and it has to be. Everything the plugin does hangs off the
+		-- FileType autocmd in its plugin/ file, and lazy.nvim re-fires only the
+		-- event that loaded a plugin -- so loading on BufReadPost would register
+		-- that autocmd just after FileType had already fired for the file being
+		-- opened, leaving the first buffer of the session uncolored until it was
+		-- reloaded. Cheap enough not to matter: the plugin file only registers
+		-- three autocmds and defines seven highlight groups, ~0.05ms of startup.
+		-- Every module that does real work (lib, the strategy, the queries) is
+		-- required from inside the FileType callback, so that cost lands on the
+		-- first file opened rather than on startup.
+		--
+		-- That per-file cost, measured against this same config with the plugin
+		-- disabled: +3.6ms to open a 534-line .astro file, +7.9ms at 405 lines,
+		-- +5.6ms at 45, and +3.3ms for this config's own 449-line functions.lua.
+		--
+		-- It scales with the number of delimiters, not with lines, which is the
+		-- only way to get a frightening number out of it: a synthetic tsx file
+		-- carrying nested brackets and JSX on every line runs 11.6 delimiters
+		-- per line against ~0.9 for real .astro, and costs +307ms at 500 lines
+		-- -- roughly 80x the real figure at that size. Nothing either project
+		-- contains is remotely that dense, and across 246 .astro files from
+		-- astrowind, astro-paper and astro.build the median file is 43-53 lines
+		-- with exactly one over 500. Benchmark on real files, not generated ones.
+		lazy = false,
+		-- No setup() call and no opts: the defaults are the wanted behaviour
+		-- (global strategy, the bundled queries, and a highlight priority
+		-- between treesitter's and semantic tokens').
 	},
 	{
 		'RRethy/vim-illuminate', -- Auto-highlights other uses of the word under the cursor via LSP, Tree-sitter, or regex

@@ -23,7 +23,7 @@
   "pinnacle": { "branch": "main", "commit": "6849357c9cf1138894e26d87b6721946fb193406" },
   "plenary.nvim": { "branch": "master", "commit": "74b06c6c75e4eeb3108ec01852001636d85a932b" },
   "project.nvim": { "branch": "main", "commit": "8c6bad7d22eef1b71144b401c9f74ed01526a4fb" },
-  "rainbow": { "branch": "master", "commit": "76ca1a20aa42edb5c65c19029968aad4625790dc" },
+  "rainbow-delimiters.nvim": { "branch": "master", "commit": "012f1480cd9a5fc99fce7678e0a536421a53fc46" },
   "scalpel": { "branch": "main", "commit": "25147091c1c2a6475b0cef93ed38fee575fcffb5" },
   "tagbar": { "branch": "master", "commit": "07cb8247487208124978daff8e13624667635457" },
   "targets.vim": { "branch": "master", "commit": "6325416da8f89992b005db3e4517aaef0242602e" },

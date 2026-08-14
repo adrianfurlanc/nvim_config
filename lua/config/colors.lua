@@ -227,6 +227,74 @@ vim.api.nvim_create_autocmd('ColorScheme', {
 	callback = flash_colors,
 })
 
+-- rainbow-delimiters.nvim's bracket colors (lua/plugins/ui.lua) — one per
+-- nesting depth, cycling after seven.
+--
+-- The plugin defines all seven itself and six of its defaults are already
+-- gruvbox values, but two of the seven slots are spent badly:
+--
+--   - RainbowDelimiterCyan defaults to #a89984, which is gruvbox's fg4 gray,
+--     not a color. The seventh depth reads as an uncolored bracket, and sits a
+--     shade away from the #928374 gray this file gives InactiveText and unused
+--     symbols. Given gruvbox's neutral aqua instead.
+--   - RainbowDelimiterGreen defaults to #689d6a, which *is* that neutral aqua,
+--     so two slots carried one hue while gruvbox's actual green went unused.
+--     Moved to #98971a.
+--
+-- The other five keep the plugin's values, restated here so all seven read as
+-- one ramp rather than five inherited and two overridden. Neutral rather than
+-- bright throughout, unlike the flash labels and diagnostic signs above:
+-- delimiters sit on nearly every line of code, so they mark depth from the
+-- background instead of competing with the syntax they enclose.
+--
+-- The order the colors appear in is the plugin's, not this list's: it displays
+-- them red, yellow, blue, orange, green, violet, cyan, deliberately out of
+-- spectrum order so adjacent depths contrast. Left alone.
+--
+-- Per-scheme, like the blocks above, and markdown is the case that needs it.
+-- The plugin's markdown query is intentionally empty -- embedded languages are
+-- left to their own grammars -- but that is exactly what makes the branch
+-- necessary rather than pointless: a ```lua or ```ts fence is delimited by the
+-- injected language's own query, so brackets *are* colored inside fences, and
+-- markdown is the one filetype this config switches schemes for (see the
+-- bottom of this file). Without the OceanicNext values those fences would draw
+-- gruvbox brackets in an OceanicNext buffer. The OceanicNext ramp is that
+-- scheme's own red/orange/yellow/green/cyan/blue/purple, the same values the
+-- search, flash and quickfix blocks take from it.
+--
+-- Plain :highlight rather than the `highlight!` the flash groups need: these
+-- are real definitions rather than links, and the plugin registers its versions
+-- with `default = true`, which by definition never overrides them. Re-applied
+-- on ColorScheme because :colorscheme runs `hi clear` first.
+local function rainbow_colors()
+	if (vim.g.colors_name or '') == 'OceanicNext' then
+		vim.cmd([[
+			highlight RainbowDelimiterRed    gui=NONE cterm=NONE guifg=#ec5f67 ctermfg=203
+			highlight RainbowDelimiterOrange gui=NONE cterm=NONE guifg=#f99157 ctermfg=209
+			highlight RainbowDelimiterYellow gui=NONE cterm=NONE guifg=#fac863 ctermfg=221
+			highlight RainbowDelimiterGreen  gui=NONE cterm=NONE guifg=#99c794 ctermfg=114
+			highlight RainbowDelimiterCyan   gui=NONE cterm=NONE guifg=#5fb3b3 ctermfg=73
+			highlight RainbowDelimiterBlue   gui=NONE cterm=NONE guifg=#6699cc ctermfg=68
+			highlight RainbowDelimiterViolet gui=NONE cterm=NONE guifg=#c594c5 ctermfg=176
+		]])
+	else
+		vim.cmd([[
+			highlight RainbowDelimiterRed    gui=NONE cterm=NONE guifg=#cc241d ctermfg=124
+			highlight RainbowDelimiterOrange gui=NONE cterm=NONE guifg=#d65d0e ctermfg=166
+			highlight RainbowDelimiterYellow gui=NONE cterm=NONE guifg=#d79921 ctermfg=172
+			highlight RainbowDelimiterGreen  gui=NONE cterm=NONE guifg=#98971a ctermfg=106
+			highlight RainbowDelimiterCyan   gui=NONE cterm=NONE guifg=#689d6a ctermfg=72
+			highlight RainbowDelimiterBlue   gui=NONE cterm=NONE guifg=#458588 ctermfg=66
+			highlight RainbowDelimiterViolet gui=NONE cterm=NONE guifg=#b16286 ctermfg=132
+		]])
+	end
+end
+rainbow_colors()
+vim.api.nvim_create_autocmd('ColorScheme', {
+	group = vim.api.nvim_create_augroup('RainbowColors', {}),
+	callback = rainbow_colors,
+})
+
 -- Quickfix window ($VIMRUNTIME/syntax/qf.vim), which the :Lint, :Eslint,
 -- :Stylelint, :Typecheck and :AstroCheck commands fill (see
 -- lua/functions.lua). Three of
