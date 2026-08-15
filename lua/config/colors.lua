@@ -379,7 +379,15 @@ vim.opt.guicursor = 'n-v-c-sm:block-Cursor,i-ci-ve:ver25-Cursor,r-cr-o:hor20-Cur
 -- would also re-fire every ColorScheme autocmd above).
 -- ============================================================
 local function scheme_for_filetype()
-	local want = vim.bo.filetype == 'markdown' and 'OceanicNext' or 'gruvbox'
+	-- Matched on the part before the dot, so compound filetypes count too:
+	-- vim-mdx-js (lua/plugins/lang.lua) sets 'markdown.mdx', and an exact
+	-- comparison left .mdx files on gruvbox while ftplugin/markdown.lua's
+	-- prose settings still applied to them -- ftplugin loading splits on the
+	-- dot, so those files get the layout of a markdown buffer either way.
+	-- vim-sleuth and lua/plugins/treesitter.lua both treat .mdx as markdown
+	-- for the same reason.
+	local ft = vim.bo.filetype:gsub('%..*', '')
+	local want = ft == 'markdown' and 'OceanicNext' or 'gruvbox'
 	if (vim.g.colors_name or '') ~= want then
 		vim.cmd.colorscheme(want)
 	end
