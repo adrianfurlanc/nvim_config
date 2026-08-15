@@ -18,20 +18,24 @@ function M.blur_window()
 		-- Instead of unconditionally resetting, append to existing array.
 		-- This allows us to gracefully handle duplicate autocmds.
 		local matches = vim.w.wincent_matches or {}
-		local height = vim.o.lines
-		local slop = math.floor(height / 2)
-		local start = math.max(1, vim.fn.line('w0') - slop)
+		local slop = math.floor(vim.o.lines / 2)
+		local first = math.max(1, vim.fn.line('w0') - slop)
 		local last = math.min(vim.fn.line('$'), vim.fn.line('w$') + slop)
-		while start <= last do
-			local next_chunk = start + 8
-			local positions = {}
-			for lnum = start, math.min(last, next_chunk) do
-				positions[#positions + 1] = lnum
-			end
-			local id = vim.fn.matchaddpos('InactiveText', positions, 1000)
-			matches[#matches + 1] = id
-			start = next_chunk
+
+		-- One call for the whole range. It used to go in batches, because
+		-- Vim's matchaddpos() takes at most 8 positions per call -- a limit
+		-- nvim does not have and no longer documents (measured: 200 in one
+		-- call, all 200 kept). The batches were also nine lines wide and
+		-- restarted on their own last line, so every ninth line was matched
+		-- twice. This runs on every window switch and tmux focus change.
+		local positions = {}
+		for lnum = first, last do
+			positions[#positions + 1] = lnum
 		end
+		if #positions > 0 then
+			matches[#matches + 1] = vim.fn.matchaddpos('InactiveText', positions, 1000)
+		end
+
 		vim.w.wincent_matches = matches
 	end
 end
