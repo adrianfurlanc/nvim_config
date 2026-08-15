@@ -148,6 +148,123 @@ return {
 			})
 		end,
 	},
+	{
+		-- Splits a one-line block across lines and joins it back again. An
+		-- object, array, argument list, JSX prop list, lua table or import list
+		-- goes from one line to one item per line and back, with the trailing
+		-- comma and the indentation fixed up on the way.
+		--
+		-- Treesitter-based rather than punctuation-based: it takes the node
+		-- under the cursor and walks up until it finds one it has a preset for,
+		-- so a comma inside a nested call or a string is not a split point. It
+		-- needs no dependency on the nvim-treesitter plugin for the same reason
+		-- rainbow-delimiters does not (lua/plugins/ui.lua) -- it calls core
+		-- vim.treesitter, and the README names nvim-treesitter only as the thing
+		-- that installs the parsers, which lua/plugins/treesitter.lua already
+		-- does.
+		'Wansmer/treesj',
+		-- All three capitalised, and none of them are the plugin's own defaults
+		-- of <leader>m/s/j. Two of those three are taken here: <Leader>m is the
+		-- matchparen toggle and <Leader>s is scalpel (both lua/config/keymaps.lua,
+		-- both spelled with a capital L, which is what hid them from a first
+		-- look). Capitalising all three keeps them together as one family rather
+		-- than taking the two free lowercase keys and leaving the odd one out.
+		keys = {
+			{ '<leader>M', function() require('treesj').toggle() end, desc = 'Split/join block' },
+			{ '<leader>S', function() require('treesj').split() end, desc = 'Split block' },
+			{ '<leader>J', function() require('treesj').join() end, desc = 'Join block' },
+		},
+		-- A config function rather than an opts table, because the astro entry
+		-- below has to require() a module out of treesj itself. An opts table is
+		-- built while this spec file is read, at startup, when treesj is not yet
+		-- on the runtimepath and that require would fail; a config function runs
+		-- after the plugin is loaded.
+		config = function()
+			local lang_utils = require('treesj.langs.utils')
+
+			-- True when a tag node carries at least one attribute. Every astro
+			-- attribute form is a plain `attribute` node -- quoted values,
+			-- shorthand expressions (href={url}), spreads ({...props}),
+			-- directives (client:load, class:list, is:raw) and bare booleans --
+			-- so this is the whole question, not a heuristic.
+			local has_attribute = lang_utils.helpers.contains({ 'attribute' })
+
+			require('treesj').setup({
+				-- The plugin's own keys are <leader>m/s/j, and <leader>m is
+				-- already the matchparen toggle in lua/config/keymaps.lua --
+				-- which is the whole reason matchparen is kept off the
+				-- disabled_plugins list in lua/config/lazy.lua. Taking two of
+				-- the three and quietly losing the third would be worse than
+				-- declaring all three in `keys` above, so the plugin's own set
+				-- is off and toggle moves to <leader>M. s and j were unmapped.
+				use_default_keymaps = false,
+				-- Default is 120. Neither astro project sets printWidth in its
+				-- .prettierrc, so prettier is formatting at its own default of
+				-- 80; joining past that produces a line the next format would
+				-- split again.
+				max_join_length = 80,
+				langs = {
+					-- treesj ships no astro preset, so the template half of an
+					-- .astro file answers `Language "astro" is not configured`
+					-- and does nothing. The frontmatter works regardless --
+					-- treesj resolves the language from the node rather than
+					-- from 'filetype', and the frontmatter is injected
+					-- typescript, which it does have a preset for.
+					--
+					-- Astro's grammar is html's with expressions added, and the
+					-- three nodes html's preset keys on -- start_tag,
+					-- self_closing_tag, element -- are all named the same in it
+					-- (the same node names lua/plugins/ui.lua's rainbow queries
+					-- match), so what follows is html's own preset rebuilt with
+					-- one addition.
+					--
+					-- Rebuilt rather than aliased to require('treesj.langs.html')
+					-- for two reasons. _prepare_presets() mutates the preset
+					-- table in place at setup, flattening its `both` key into
+					-- `split` and `join`; an alias hands over the very table
+					-- treesj holds under `html`, so the two keys share one object
+					-- that gets premerged twice and stamped with whichever
+					-- language pairs() reached last. And because the flattening
+					-- has already happened by the time this runs, a `both`
+					-- override merged onto that table would lose to the `split`
+					-- and `join` it was supposed to feed -- silently, since the
+					-- merge succeeds and only the value is wrong.
+					astro = {
+						-- `enable` is what keeps a tag with no attributes from
+						-- being split into `<ul` and a lone `>`. It is not a
+						-- refusal: a false answer sends format.lua back up to
+						-- the parent to look again (start_node = node:parent()),
+						-- and the parent of a tag is the element, which has a
+						-- preset of its own. So <Leader>M on `<ul>` now splits
+						-- and joins the element -- its children one to a line --
+						-- while on `<div class="a">` it still splits the
+						-- attributes, which is the one thing a tag with
+						-- attributes is worth splitting for.
+						--
+						-- format_empty_node = false was the other candidate. It
+						-- reads more directly, but it returns outright rather
+						-- than climbing, so `<ul>` would do nothing at all.
+						start_tag = lang_utils.set_default_preset({
+							both = {
+								omit = { 'tag_name' },
+								enable = has_attribute,
+							},
+						}),
+						self_closing_tag = lang_utils.set_default_preset({
+							both = {
+								omit = { 'tag_name' },
+								no_format_with = {},
+								enable = has_attribute,
+							},
+						}),
+						element = lang_utils.set_default_preset({
+							join = { space_separator = false },
+						}),
+					},
+				},
+			})
+		end,
+	},
 	{ 'machakann/vim-highlightedyank', event = 'VeryLazy' },   -- Preview selected yanked text
 	{ 'tommcdo/vim-lion', event = 'VeryLazy' },                -- Aligns text to a character with the gl and gL operators
 	-- Commenting (gc/gcc) is built into Neovim 0.10+, so vim-commentary is
