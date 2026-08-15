@@ -18,10 +18,10 @@ map('n', '<CR>', function()
 end, { expr = true })
 
 -- Use <Leader>s instead of default <Leader>e:
-map('n', '<Leader>s', '<Plug>(Scalpel)', { remap = true })
+map('n', '<Leader>s', '<Plug>(Scalpel)', { remap = true, desc = 'Substitute word' })
 
 -- Toggle show/hide invisible chars
-map('n', '<leader>i', ':set list!<cr>')
+map('n', '<leader>i', ':set list!<cr>', { desc = 'Toggle invisible chars' })
 
 -- Fuzzy-finder mappings (<C-p>, <leader>f*) live in lua/plugins/fzf.lua
 
@@ -55,39 +55,43 @@ map('n', '<Left>', ':cpfile<CR>', { silent = true })
 map('n', '<Right>', ':cnfile<CR>', { silent = true })
 
 -- :only mapped to leader+o
-map('n', '<leader>o', ':only<cr>')
+map('n', '<leader>o', ':only<cr>', { desc = 'Close other windows' })
 
 -- Pre-fill the cmdline with :q (no <CR>: press Enter yourself, or add ! / a
 -- count first)
-map('n', '<leader>q', ':q')
+map('n', '<leader>q', ':q', { desc = 'Prefill :q' })
 
 -- <leader>p -- Show the path of the current file (mnemonic: path; useful when
 -- you have a lot of splits and the status line gets truncated).
-map('n', '<Leader>p', ":echo expand('%:p:h') . '/'<CR>")
+map('n', '<Leader>p', ":echo expand('%:p:h') . '/'<CR>", { desc = 'Show file path' })
 
 -- Edit vimrc in new buffer
-map('n', '<leader>mv', ':edit $MYVIMRC<CR>')
+map('n', '<leader>mv', ':edit $MYVIMRC<CR>', { desc = 'Edit init.lua' })
 
 -- Clears the search register
-map('n', '<Leader>/', ':nohlsearch<CR>')
+map('n', '<Leader>/', ':nohlsearch<CR>', { desc = 'Clear search highlight' })
 
 -- Dismiss whatever is in the message area: errors and :messages output, which
 -- are the two things the 5s timer deliberately leaves on screen (see
 -- lua/config/autocmds.lua). <C-l> would do this in stock Vim, but is taken by
 -- split navigation above.
-map('n', '<Leader>L', function() require('functions').clear_message_area_now() end, { silent = true })
+map('n', '<Leader>L', function() require('functions').clear_message_area_now() end,
+	{ silent = true, desc = 'Clear message area' })
 
 -- Zap trailing whitespace
-map('n', '<Leader>zz', function() require('functions').zap() end, { silent = true })
+map('n', '<Leader>zz', function() require('functions').zap() end,
+	{ silent = true, desc = 'Zap trailing whitespace' })
 
 -- Delete Trailing Whitespace
-map('n', '_$', function() require('functions').preserve([[%s/\s\+$//e]]) end)
+map('n', '_$', function() require('functions').preserve([[%s/\s\+$//e]]) end,
+	{ desc = 'Trim trailing whitespace' })
 
 -- Use \+e to edit a file in the directory of the current file
-map('n', '<LocalLeader>e', ":edit <C-R>=expand('%:p:h') . '/'<CR>")
+map('n', '<LocalLeader>e', ":edit <C-R>=expand('%:p:h') . '/'<CR>", { desc = 'Edit file in this dir' })
 
 -- Auto Indent File
-map('n', '_=', function() require('functions').preserve('normal gg=G') end)
+map('n', '_=', function() require('functions').preserve('normal gg=G') end,
+	{ desc = 'Auto-indent file' })
 
 -- Yank entire line
 map('n', 'yy', function() require('functions').preserve('normal 0y$') end)
@@ -96,46 +100,47 @@ map('n', 'yy', function() require('functions').preserve('normal 0y$') end)
 map('n', 'Y', 'y$')
 
 -- Find merge conflict markers
-map('n', '<leader>fc', [[/\v^[<|=>]{7}( .*|$)<CR>]])
+map('n', '<leader>fc', [[/\v^[<|=>]{7}( .*|$)<CR>]], { desc = 'Find merge conflicts' })
 
 map('n', 'c*', '*Ncgn')
 
 -- <leader>G is free: it toggled vim-gitgutter's signs, and there is no gutter
 -- diff plugin any more (see lua/plugins/git.lua).
 
-map('n', '<Leader>v', 'gv')
+map('n', '<Leader>v', 'gv', { desc = 'Reselect last selection' })
 
 -- Mappings in the style of unimpaired-next
-map('n', '[W', '<Plug>(ale_first)', { silent = true, remap = true })
-map('n', '[w', '<Plug>(ale_previous)', { silent = true, remap = true })
-map('n', ']w', '<Plug>(ale_next)', { silent = true, remap = true })
-map('n', ']W', '<Plug>(ale_last)', { silent = true, remap = true })
+map('n', '[W', '<Plug>(ale_first)', { silent = true, remap = true, desc = 'First ALE issue' })
+map('n', '[w', '<Plug>(ale_previous)', { silent = true, remap = true, desc = 'Previous ALE issue' })
+map('n', ']w', '<Plug>(ale_next)', { silent = true, remap = true, desc = 'Next ALE issue' })
+map('n', ']W', '<Plug>(ale_last)', { silent = true, remap = true, desc = 'Last ALE issue' })
 
 -- Toggle Folds
 -- map('n', '<Tab>', 'za')
 -- map('n', '<F6>', '<C-i>')
 
 -- Go to functions
-map('n', '[[', '?{<CR>w99[{', { remap = true })
-map('n', '][', '/}<CR>b99]}', { remap = true })
-map('n', ']]', 'j0[[%/{<CR>', { remap = true })
-map('n', '[]', 'k$][%?}<CR>', { remap = true })
+map('n', '[[', '?{<CR>w99[{', { remap = true, desc = 'Previous function start' })
+map('n', '][', '/}<CR>b99]}', { remap = true, desc = 'Next function end' })
+map('n', ']]', 'j0[[%/{<CR>', { remap = true, desc = 'Next function start' })
+map('n', '[]', 'k$][%?}<CR>', { remap = true, desc = 'Previous function end' })
 
 -- Commenting
-map('n', '<Leader>c', 'gcc', { remap = true })
+map('n', '<Leader>c', 'gcc', { remap = true, desc = 'Comment line' })
 
 -- Move lines around
 map('n', '<C-Up>', function() require('mappings.normal').move_up() end, { silent = true })
 map('n', '<C-Down>', function() require('mappings.normal').move_down() end, { silent = true })
 
 -- Open files in same directory as current file
-map('n', '<leader>ew', ':e %%', { remap = true })
-map('n', '<leader>es', ':sp %%', { remap = true })
-map('n', '<leader>ev', ':vsp %%', { remap = true })
-map('n', '<leader>et', ':tabe %%', { remap = true })
+map('n', '<leader>ew', ':e %%', { remap = true, desc = 'Edit in this dir' })
+map('n', '<leader>es', ':sp %%', { remap = true, desc = 'Split in this dir' })
+map('n', '<leader>ev', ':vsp %%', { remap = true, desc = 'Vsplit in this dir' })
+map('n', '<leader>et', ':tabe %%', { remap = true, desc = 'Tab in this dir' })
 
 -- Cycle through line numbering modes
-map('n', '<Leader>r', function() require('functions').cycle_numbering() end, { silent = true })
+map('n', '<Leader>r', function() require('functions').cycle_numbering() end,
+	{ silent = true, desc = 'Cycle line numbering' })
 
 -- Stop annoying paren match highlighting from flashing all over the screen,
 -- or start it.
@@ -143,7 +148,7 @@ map('n', '<Leader>r', function() require('functions').cycle_numbering() end, { s
 -- (mnemonic: [m]atch paren)
 map('n', '<Leader>m', function()
 	vim.cmd(vim.g.loaded_matchparen and 'NoMatchParen' or 'DoMatchParen')
-end, { silent = true })
+end, { silent = true, desc = 'Toggle paren match' })
 
 -- VISUAL
 

@@ -5,6 +5,15 @@
 -- with buffer size, the regex one doesn't) for byte-identical output.
 -- Needs the tree-sitter CLI (brew install tree-sitter-cli) and a C compiler
 -- to build parsers.
+
+-- The two parameter swaps need their description in two places: on lazy's
+-- placeholder entry in `keys`, which is what which-key reads while the plugin
+-- is still unloaded, and on the real mapping in `config`, which replaces that
+-- placeholder on the first press. Shared constants so the panel cannot label
+-- them one way before the first swap and another way after.
+local SWAP_NEXT_DESC = 'Swap parameter with next'
+local SWAP_PREV_DESC = 'Swap parameter with previous'
+
 return {
 	{
 		'nvim-treesitter/nvim-treesitter',
@@ -172,8 +181,8 @@ return {
 			{ '[m', mode = { 'n', 'x', 'o' } },
 			{ ']M', mode = { 'n', 'x', 'o' } },
 			{ '[M', mode = { 'n', 'x', 'o' } },
-			{ '<leader>a', mode = 'n' },
-			{ '<leader>A', mode = 'n' },
+			{ '<leader>a', mode = 'n', desc = SWAP_NEXT_DESC },
+			{ '<leader>A', mode = 'n', desc = SWAP_PREV_DESC },
 		},
 		config = function()
 			require('nvim-treesitter-textobjects').setup({
@@ -433,10 +442,10 @@ return {
 
 			map('n', '<leader>a', function()
 				swap_parameter(true)
-			end, 'Swap parameter with next')
+			end, SWAP_NEXT_DESC)
 			map('n', '<leader>A', function()
 				swap_parameter(false)
-			end, 'Swap parameter with previous')
+			end, SWAP_PREV_DESC)
 
 			-- ;/, are deliberately not mapped to repeatable_move: flash.nvim
 			-- owns them, and ]m/[m already repeat themselves.
