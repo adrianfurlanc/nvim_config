@@ -7,7 +7,9 @@ vim.opt.backspace = { 'indent', 'eol', 'start' }    -- Backspace over indent, li
 vim.opt.clipboard = 'unnamed'                       -- Yank and paste with the system clipboard
 vim.opt.copyindent = true                           -- Reuse existing indent characters on autoindent
 vim.opt.cursorline = true                           -- Highlight the current line
-vim.opt.diffopt = { 'vertical', 'iwhite' }          -- Open diffs in vertical splits; ignore whitespace changes
+-- 'append', not '=': '=' would drop nvim's own diff defaults, and 'filler'
+-- among them is what keeps the two panes of a diff aligned.
+vim.opt.diffopt:append({ 'vertical', 'iwhite' })    -- Open diffs in vertical splits; ignore whitespace changes
 vim.opt.encoding = 'utf-8'                          -- UTF-8...
 vim.opt.bomb = false                                -- ...without a byte order mark
 vim.opt.exrc = true                                 -- Read project-local .nvimrc/.exrc (restricted by 'secure')
@@ -89,6 +91,3 @@ vim.g.clipboard = {
 	paste = { ['+'] = 'pbpaste', ['*'] = 'pbpaste' },
 	cache_enabled = 0,
 }
-
--- Commented out settings
--- vim.opt.guifont = 'Sauce Code Pro Medium Nerd Font Complete:h14' -- GUI font
