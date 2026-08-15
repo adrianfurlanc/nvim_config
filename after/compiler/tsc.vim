@@ -17,13 +17,13 @@
 " directory holding tsconfig.json, and diagnostics come out relative to the
 " current directory, which is where :make resolves them from.
 "
-" NOTE: this only type-checks .ts/.tsx files. tsc cannot parse .astro
-" components — that needs `astro check`, which is unavailable here: it depends
-" on a programmatic TypeScript API that the native compiler (7.0+) does not yet
-" ship, and this project is on typescript 7.0.2. @astrojs/check declares a peer
-" range of ^5 || ^6 and refuses to run, so it is deliberately not installed.
-" Track https://github.com/withastro/roadmap/discussions/1321 — once Astro
-" supports it, add an `astro` compiler alongside this one.
+" NOTE: this only type-checks .ts/.tsx files. tsc skips .astro components as an
+" unknown extension, so it silently sees just the .ts half of an Astro project.
+" after/compiler/astro.vim (:AstroCheck) covers both and is what to reach for
+" there; this stays for plain TypeScript, and for projects where `astro check`
+" cannot run — it needs @astrojs/check with typescript 6.x, which the 7.x
+" native compiler does not satisfy (the reasoning is in that file, along with
+" https://github.com/withastro/roadmap/discussions/1321).
 
 if exists(':CompilerSet') != 2
   command -nargs=* CompilerSet setlocal <args>
