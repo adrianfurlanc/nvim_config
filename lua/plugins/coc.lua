@@ -73,7 +73,8 @@ return {
 		vim.keymap.set('i', '<Tab>',
 			[[coc#pum#visible() ? coc#pum#next(1) : coc#expandableOrJumpable() ? "\<C-r>=coc#rpc#request('doKeymap', ['snippets-expand-jump',''])\<CR>" : v:lua.coc_check_backspace() ? "\<Tab>" : coc#refresh()]],
 			expr_opts)
-		vim.keymap.set('i', '<S-Tab>', [[coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"]], expr_opts)		vim.keymap.set('i', '<CR>',
+		vim.keymap.set('i', '<S-Tab>', [[coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"]], expr_opts)
+		vim.keymap.set('i', '<CR>',
 			[[coc#pum#visible() ? coc#pum#confirm() : "\<C-g>u\<CR>\<C-r>=coc#on_enter()\<CR>"]],
 			expr_opts)
 
