@@ -360,7 +360,26 @@ return {
 	{
 		'folke/which-key.nvim', -- Pops up a panel of available mappings after a pending prefix key
 		event = 'VeryLazy',
-		opts = {},
+		opts = {
+			win = {
+				-- The panel is normally pinned to the bottom of the window at up
+				-- to 25 rows. Left at its default of true, no_overlap moves it
+				-- instead to the row below the cursor and gives it whatever is
+				-- left underneath -- check_overlap() in which-key/view.lua does
+				-- `opts.row = row + 1` and `opts.height = max(lines - row, 4)`.
+				-- So the panel's height becomes a function of where the cursor
+				-- happens to sit: nearly full height near the top of a file, and
+				-- the hard floor of four rows once the cursor is near the
+				-- bottom, which is where most editing happens. Four rows of a
+				-- forty-entry list is not a menu, it is a scrollbar.
+				--
+				-- The trade is that the panel now covers the cursor line while
+				-- it is up. That line is not being edited in the moment between
+				-- pressing <Leader> and choosing what follows it, and the panel
+				-- closes on the keypress.
+				no_overlap = false,
+			},
+		},
 	},
 	{ 'lilydjwg/colorizer' },  -- Colorizes hex color codes (#rrggbb / #rgb) inline in the buffer
 	{ 'wincent/pinnacle' },    -- Utility functions for tweaking and reading Vim highlight groups
