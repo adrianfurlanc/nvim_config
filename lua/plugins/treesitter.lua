@@ -180,9 +180,106 @@ return {
 				move = { set_jumps = true }, -- <C-o> comes back
 			})
 
+			local shared = require('nvim-treesitter-textobjects.shared')
 			local select = require('nvim-treesitter-textobjects.select')
 			local move = require('nvim-treesitter-textobjects.move')
 			local swap = require('nvim-treesitter-textobjects.swap')
+
+			-- The plugin resolves textobjects two different ways and only one
+			-- of them descends into injected languages. `select` goes through
+			-- shared.textobject_at_point, which walks every tree with
+			-- LanguageTree:for_each_tree -- so `vaf` already works on the
+			-- typescript inside an astro frontmatter. `move` and `swap` go
+			-- through shared.find_best_range, which queries `parser:trees()[1]`
+			-- under `parser:lang()` and nothing else. In an astro buffer that
+			-- is the astro tree, and astro's textobjects.scm is `; inherits:
+			-- html` -- no @parameter capture exists at all, and @function only
+			-- matches on the html side. So <leader>a/<leader>A silently do
+			-- nothing there, and ]m/[m are worse than inert: they jump to
+			-- whatever the html query matched (measured: past the frontmatter,
+			-- onto the first tag) instead of the next function. Same in vue,
+			-- svelte, and any injected code block.
+			--
+			-- Reimplemented over every tree instead. Upstream main is identical
+			-- as of 2026-08-15, so there is nothing to pull and no reason to
+			-- wait -- this makes the motions wrong, not just missing, in the
+			-- filetype this config edits most.
+			--
+			-- Faithful to the original for these queries: same first-wins-on-
+			-- ties scoring, and it merges the multi-node captures the
+			-- @parameter.outer patterns depend on. The one thing it drops is
+			-- #set!/#make-range! metadata, which none of the ecma, typescript
+			-- or tsx queries use.
+			--
+			-- Memoized on the same key upstream uses (buffer, tree root, query
+			-- group), which a re-parse invalidates on its own. That is not
+			-- optional: one uncached pass over a 2k-line tsx buffer is 14.4ms,
+			-- and ]m would pay it on every press. Cached it is 0.02ms, so only
+			-- the first motion after an edit costs anything. Values are weak,
+			-- so the cache cannot pin a closed buffer's ranges in memory.
+			--
+			-- Startup is untouched (the plugin is still lazy on its keys, and
+			-- this only runs when it loads), but the first ]m of a session in
+			-- an astro buffer goes from 96ms to 134ms. The whole difference is
+			-- one compile of the typescript textobjects query -- 37ms, since
+			-- typescript inherits all of ecma -- which upstream never paid here
+			-- only because it never consulted that query. A .ts buffer paid it
+			-- on its first motion all along. It is cached per session
+			-- afterwards (0.001ms), and both versions pay the 93ms parse(true)
+			-- underneath it, which is the real cost of that first press.
+			local range_cache = setmetatable({}, { __mode = 'v' })
+
+			---@return table<string, Range6[]> ranges by capture name
+			local function capture_ranges(bufnr, root, lang, query_group)
+				local key = string.format('%d-%s-%s', bufnr, root:id(), query_group)
+				if range_cache[key] then
+					return range_cache[key]
+				end
+
+				local ranges = {} ---@type table<string, Range6[]>
+				local query = vim.treesitter.query.get(lang, query_group)
+
+				if query then
+					for _, match in query:iter_matches(root, bufnr) do
+						for id, nodes in pairs(match) do
+							local name = query.captures[id]
+							local srow, scol, sbyte = nodes[1]:range(true)
+							local _, _, _, erow, ecol, ebyte = nodes[#nodes]:range(true)
+
+							ranges[name] = ranges[name] or {}
+							table.insert(ranges[name], { srow, scol, sbyte, erow, ecol, ebyte })
+						end
+					end
+				end
+
+				range_cache[key] = ranges
+				return ranges
+			end
+
+			shared.find_best_range = function(bufnr, capture_string, query_group, filter, score)
+				local capture = capture_string:gsub('^@', '')
+				local parser = vim.treesitter.get_parser(bufnr, nil, { error = false })
+				if not parser then
+					return nil
+				end
+				parser:parse(true)
+
+				local best, best_score ---@type Range6?, number?
+				parser:for_each_tree(function(tree, ltree)
+					local found = capture_ranges(bufnr, tree:root(), ltree:lang(), query_group)
+
+					for _, range in ipairs(found[capture] or {}) do
+						if filter(range) then
+							local current = score(range)
+							if not best or current > best_score then
+								best, best_score = range, current
+							end
+						end
+					end
+				end)
+
+				return best
+			end
 
 			-- The main branch creates no mappings of its own; the
 			-- `keymaps = { ['af'] = '@function.outer' }` table in most configs
@@ -240,11 +337,88 @@ return {
 
 			-- The one thing targets.vim cannot do: reorder arguments in place.
 			-- Dot-repeatable (the plugin routes it through 'opfunc').
+			--
+			-- Guarded, because upstream picks its swap target by byte position
+			-- alone -- swap.lua's next_textobject filters on `start >=
+			-- search_start` and nothing else. On the last parameter of a
+			-- function that reaches into the next one and swaps across the
+			-- boundary: `first(a, b)` + `second(x, y)` becomes `first(b, x)` +
+			-- `second(y, a)`, moving `a` into a function it was never in. Same
+			-- in a plain .ts file, so it is upstream's behaviour rather than a
+			-- side effect of the find_best_range override above.
+			--
+			-- Scoping it properly would mean reimplementing swap_textobject and
+			-- swap_nodes, both file-locals. This instead re-runs the candidate
+			-- search upstream is about to run and declines to start the swap
+			-- unless the winner is a sibling in the same parameter list, which
+			-- also rules out the `x => g(y)` case a range-containment test
+			-- would wave through. A capture that cannot be resolved back to a
+			-- node declines too: the fallback worth having is the one that does
+			-- nothing, not the one that reinstates the bug being guarded.
+			--
+			-- ignore_injections is the whole ballgame here -- it defaults to
+			-- *true*, so without it get_node stops at astro's
+			-- frontmatter_js_block, never matches the parameter's byte range,
+			-- and every astro swap takes the unresolved path.
+			local function node_at_range(buf, range)
+				local node = vim.treesitter.get_node({
+					bufnr = buf,
+					pos = { range[1], range[2] },
+					ignore_injections = false,
+				})
+
+				while node do
+					local _, _, sbyte, _, _, ebyte = node:range(true)
+					if sbyte == range[3] and ebyte == range[6] then
+						return node
+					end
+					node = node:parent()
+				end
+			end
+
+			local function swap_parameter(forward)
+				local buf = vim.api.nvim_get_current_buf()
+				local range = shared.textobject_at_point('@parameter.inner', 'textobjects', buf)
+				local node = range and node_at_range(buf, range)
+				local list = node and node:parent()
+
+				if not list then
+					return
+				end
+
+				-- Upstream's next_textobject/previous_textobject filter and
+				-- score, so the candidate tested here is the one it would take.
+				local filter, score
+				if forward then
+					filter = function(r)
+						return r[3] >= range[6] and r[6] >= range[6] and not (r[3] == range[3] and r[6] == range[6])
+					end
+					score = function(r)
+						return -r[3]
+					end
+				else
+					filter = function(r)
+						return r[6] <= range[3] and r[3] < range[3]
+					end
+					score = function(r)
+						return r[6]
+					end
+				end
+
+				local target = shared.find_best_range(buf, '@parameter.inner', 'textobjects', filter, score)
+				local sibling = target and node_at_range(buf, target)
+
+				if sibling and sibling:parent() and sibling:parent():equal(list) then
+					local run = forward and swap.swap_next or swap.swap_previous
+					run('@parameter.inner')
+				end
+			end
+
 			map('n', '<leader>a', function()
-				swap.swap_next('@parameter.inner')
+				swap_parameter(true)
 			end, 'Swap parameter with next')
 			map('n', '<leader>A', function()
-				swap.swap_previous('@parameter.inner')
+				swap_parameter(false)
 			end, 'Swap parameter with previous')
 
 			-- ;/, are deliberately not mapped to repeatable_move: flash.nvim
