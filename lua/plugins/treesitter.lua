@@ -139,6 +139,23 @@ return {
 		-- on the runtimepath.
 		'nvim-treesitter/nvim-treesitter-textobjects',
 		branch = 'main',
+		-- Pinned to the commit the two overrides in `config` below were written
+		-- against. Both reach into plugin internals: one replaces
+		-- shared.find_best_range outright, the other mirrors the filter and
+		-- scoring in swap.lua's next_textobject so it can predict the target
+		-- upstream is about to pick. Neither would error if upstream changed
+		-- that function's signature, its scoring, or the shape of what it
+		-- returns -- the motions would simply go quietly wrong again, which is
+		-- the failure those overrides exist to fix.
+		--
+		-- lazy-lock.json is not the protection: :Lazy update rewrites it.
+		-- `commit` is what holds the checkout, since the repo ships no tags for
+		-- `version` to track.
+		--
+		-- To lift it: drop this line, :Lazy update, then re-read upstream's
+		-- shared.find_best_range and swap.lua's next_textobject against the
+		-- assumptions recorded below before keeping the result.
+		commit = '898ee307df58f854d11cd7edd06472574d48014e',
 		-- Every mapping is listed with its modes because the select objects
 		-- only exist in visual and operator-pending; a default normal-mode
 		-- stub would never fire from `daf`.
