@@ -186,8 +186,54 @@ return {
 			-- attribute form is a plain `attribute` node -- quoted values,
 			-- shorthand expressions (href={url}), spreads ({...props}),
 			-- directives (client:load, class:list, is:raw) and bare booleans --
-			-- so this is the whole question, not a heuristic.
+			-- so this is the whole question, not a heuristic. Plain html has
+			-- only the quoted and bare forms, and both are that same node.
 			local has_attribute = lang_utils.helpers.contains({ 'attribute' })
+
+			-- html's own preset rebuilt, with `enable` added to the two tag
+			-- nodes. That is what keeps a tag carrying no attributes from being
+			-- split into `<ul` and a lone `>`. It is not a refusal: a false
+			-- answer sends format.lua back up to the parent to look again
+			-- (start_node = node:parent()), and the parent of a tag is the
+			-- element, which has a preset of its own. So <Leader>M on `<ul>`
+			-- splits and joins the element -- its children one to a line --
+			-- while on `<div class="a">` it still splits the attributes, which
+			-- is the one thing a tag with attributes is worth splitting for.
+			--
+			-- format_empty_node = false was the other candidate. It reads more
+			-- directly, but it returns outright rather than climbing, so `<ul>`
+			-- would do nothing at all.
+			--
+			-- A function returning a fresh table per language, rather than one
+			-- table under two keys, and rebuilt rather than merged onto
+			-- require('treesj.langs.html') -- both for the same reason.
+			-- _prepare_presets() mutates preset tables in place at setup,
+			-- flattening `both` into `split` and `join`. One object shared by
+			-- two languages is premerged twice and stamped with whichever
+			-- pairs() reached last, and a `both` override merged onto a table
+			-- that has already been flattened loses to the `split` it was meant
+			-- to feed -- silently, since the merge succeeds and only the value
+			-- is wrong.
+			local function tag_presets()
+				return {
+					start_tag = lang_utils.set_default_preset({
+						both = {
+							omit = { 'tag_name' },
+							enable = has_attribute,
+						},
+					}),
+					self_closing_tag = lang_utils.set_default_preset({
+						both = {
+							omit = { 'tag_name' },
+							no_format_with = {},
+							enable = has_attribute,
+						},
+					}),
+					element = lang_utils.set_default_preset({
+						join = { space_separator = false },
+					}),
+				}
+			end
 
 			require('treesj').setup({
 				-- The plugin's own keys are <leader>m/s/j, and <leader>m is
@@ -215,52 +261,15 @@ return {
 					-- three nodes html's preset keys on -- start_tag,
 					-- self_closing_tag, element -- are all named the same in it
 					-- (the same node names lua/plugins/ui.lua's rainbow queries
-					-- match), so what follows is html's own preset rebuilt with
-					-- one addition.
-					--
-					-- Rebuilt rather than aliased to require('treesj.langs.html')
-					-- for two reasons. _prepare_presets() mutates the preset
-					-- table in place at setup, flattening its `both` key into
-					-- `split` and `join`; an alias hands over the very table
-					-- treesj holds under `html`, so the two keys share one object
-					-- that gets premerged twice and stamped with whichever
-					-- language pairs() reached last. And because the flattening
-					-- has already happened by the time this runs, a `both`
-					-- override merged onto that table would lose to the `split`
-					-- and `join` it was supposed to feed -- silently, since the
-					-- merge succeeds and only the value is wrong.
-					astro = {
-						-- `enable` is what keeps a tag with no attributes from
-						-- being split into `<ul` and a lone `>`. It is not a
-						-- refusal: a false answer sends format.lua back up to
-						-- the parent to look again (start_node = node:parent()),
-						-- and the parent of a tag is the element, which has a
-						-- preset of its own. So <Leader>M on `<ul>` now splits
-						-- and joins the element -- its children one to a line --
-						-- while on `<div class="a">` it still splits the
-						-- attributes, which is the one thing a tag with
-						-- attributes is worth splitting for.
-						--
-						-- format_empty_node = false was the other candidate. It
-						-- reads more directly, but it returns outright rather
-						-- than climbing, so `<ul>` would do nothing at all.
-						start_tag = lang_utils.set_default_preset({
-							both = {
-								omit = { 'tag_name' },
-								enable = has_attribute,
-							},
-						}),
-						self_closing_tag = lang_utils.set_default_preset({
-							both = {
-								omit = { 'tag_name' },
-								no_format_with = {},
-								enable = has_attribute,
-							},
-						}),
-						element = lang_utils.set_default_preset({
-							join = { space_separator = false },
-						}),
-					},
+					-- match), so one preset serves both.
+					astro = tag_presets(),
+					-- html is given the same treatment because the lone `>` is
+					-- treesj's shipped behaviour rather than anything astro
+					-- introduced -- a bare `<ul>` in a .html file split the same
+					-- way. vue and svelte build their own copies of the html
+					-- preset with merge_preset, so they are untouched by this
+					-- and would each need a line of their own.
+					html = tag_presets(),
 				},
 			})
 		end,
