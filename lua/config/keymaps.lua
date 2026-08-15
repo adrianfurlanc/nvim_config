@@ -93,11 +93,30 @@ map('n', '<LocalLeader>e', ":edit <C-R>=expand('%:p:h') . '/'<CR>", { desc = 'Ed
 map('n', '_=', function() require('functions').preserve('normal gg=G') end,
 	{ desc = 'Auto-indent file' })
 
--- Yank entire line
-map('n', 'yy', function() require('functions').preserve('normal 0y$') end)
+-- Yank the line's CONTENT: charwise, without the trailing newline, so p
+-- pastes the text inline instead of opening a line below. That is the whole
+-- point of the remap -- "yank entire line" is what it deliberately isn't.
+--
+-- A count is handed straight back to vim (3yy stays linewise, three whole
+-- lines with their newlines), rather than given a charwise meaning of its
+-- own: multi-line charwise is what visual mode is for -- select and press y.
+-- Without this branch a count is silently swallowed and 3yy yanks one line.
+--
+-- "%s is v:register, which a callback mapping would otherwise drop, sending
+-- "ayy to the unnamed register.
+map('n', 'yy', function()
+	if vim.v.count > 0 then
+		return vim.cmd(('normal! %d"%syy'):format(vim.v.count, vim.v.register))
+	end
+	-- y$ leaves the cursor at column 0, where the 0 put it; native yy doesn't
+	-- move at all.
+	local pos = vim.fn.getcurpos()
+	vim.cmd(('normal! 0"%sy$'):format(vim.v.register))
+	vim.fn.setpos('.', pos)
+end, { desc = 'Yank line (charwise, no newline)' })
 
--- Yank to end of line
-map('n', 'Y', 'y$')
+-- Y (yank to end of line) needs no mapping: nvim maps it to y$ by default,
+-- unlike vim, where it was a synonym for yy.
 
 -- Find merge conflict markers
 map('n', '<leader>fc', [[/\v^[<|=>]{7}( .*|$)<CR>]], { desc = 'Find merge conflicts' })
@@ -109,11 +128,10 @@ map('n', 'c*', '*Ncgn')
 
 map('n', '<Leader>v', 'gv', { desc = 'Reselect last selection' })
 
--- Mappings in the style of unimpaired-next
-map('n', '[W', '<Plug>(ale_first)', { silent = true, remap = true, desc = 'First ALE issue' })
-map('n', '[w', '<Plug>(ale_previous)', { silent = true, remap = true, desc = 'Previous ALE issue' })
-map('n', ']w', '<Plug>(ale_next)', { silent = true, remap = true, desc = 'Next ALE issue' })
-map('n', ']W', '<Plug>(ale_last)', { silent = true, remap = true, desc = 'Last ALE issue' })
+-- [w/]w and [W/]W are free: they walked ALE's issues, and ALE is disabled
+-- (its spec is kept, unloaded, in lua/plugins/misc.lua). The <Plug> targets
+-- never existed, so the keys sat there timing out and advertising themselves
+-- in which-key. Diagnostics are coc's now, on [g/]g (see lua/plugins/coc.lua).
 
 -- Toggle Folds
 -- map('n', '<Tab>', 'za')
@@ -125,8 +143,9 @@ map('n', '][', '/}<CR>b99]}', { remap = true, desc = 'Next function end' })
 map('n', ']]', 'j0[[%/{<CR>', { remap = true, desc = 'Next function start' })
 map('n', '[]', 'k$][%?}<CR>', { remap = true, desc = 'Previous function end' })
 
--- Commenting
-map('n', '<Leader>c', 'gcc', { remap = true, desc = 'Comment line' })
+-- <Leader>c is ListToggle's quickfix toggle (see lua/plugins/editing.lua).
+-- It used to double as a comment-line alias for gcc, but ListToggle maps
+-- over it when it loads at VeryLazy; native gcc/gc cover commenting.
 
 -- Move lines around
 map('n', '<C-Up>', function() require('mappings.normal').move_up() end, { silent = true })

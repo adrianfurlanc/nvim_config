@@ -297,9 +297,14 @@ return {
 		event = 'VeryLazy',
 		init = function()
 			-- The default quickfix map is <leader>q, which keymaps.lua already
-			-- uses to pre-fill :q. The plugin maps with <unique>, so the clash
-			-- aborts its entire plugin file (E227). Move it to <leader>c
-			-- (mnemonic: :copen); the location list keeps the default <leader>l.
+			-- uses to pre-fill :q. Move it to <leader>c (mnemonic: :copen); the
+			-- location list keeps the default <leader>l.
+			--
+			-- The plugin only maps with <unique> when both keys are left at
+			-- their defaults; customizing one makes it map unconditionally, at
+			-- VeryLazy — after keymaps.lua — so it would silently clobber any
+			-- startup mapping on the same key. <leader>c is therefore kept free
+			-- in keymaps.lua on purpose.
 			vim.g.lt_quickfix_list_toggle_map = '<leader>c'
 		end,
 	},
