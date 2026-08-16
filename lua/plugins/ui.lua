@@ -361,6 +361,19 @@ return {
 		'folke/which-key.nvim', -- Pops up a panel of available mappings after a pending prefix key
 		event = 'VeryLazy',
 		opts = {
+			icons = {
+				-- Mapping icons come from substring rules in which-key's
+				-- icons.lua, matched against the desc, so which rows get one is
+				-- arbitrary: "Close other windows" earns the window glyph for
+				-- the word window, "Substitute word" earns nothing, and LToggle
+				-- only qualifies because toggle happens to sit inside its name.
+				-- A column that is filled for a third of the rows reads as if
+				-- the blank ones meant something. false covers both the rule
+				-- icons and the explicit ones on which-key's own marks and
+				-- registers panels; the column is sized to its widest entry, so
+				-- with every icon empty it collapses to nothing.
+				mappings = false,
+			},
 			-- vim-visual-star-search maps <Leader>* without a desc, so the
 			-- panel falls back to the raw rhs: a ~90-column execute/vimgrep
 			-- one-liner. Columns are sized to the longest label, and a column
