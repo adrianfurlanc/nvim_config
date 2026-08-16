@@ -361,6 +361,15 @@ return {
 		'folke/which-key.nvim', -- Pops up a panel of available mappings after a pending prefix key
 		event = 'VeryLazy',
 		opts = {
+			-- vim-visual-star-search maps <Leader>* without a desc, so the
+			-- panel falls back to the raw rhs: a ~90-column execute/vimgrep
+			-- one-liner. Columns are sized to the longest label, and a column
+			-- that wide fits only once, which collapsed the whole <Leader>
+			-- panel to a single column. A desc-only spec entry relabels the
+			-- existing mapping without redefining it.
+			spec = {
+				{ '<Leader>*', desc = 'Vimgrep word/selection in project', mode = { 'n', 'x' } },
+			},
 			win = {
 				-- The panel is normally pinned to the bottom of the window at up
 				-- to 25 rows. Left at its default of true, no_overlap moves it
