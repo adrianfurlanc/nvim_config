@@ -63,6 +63,11 @@ map('n', '<Right>', ':cnfile<CR>', { silent = true })
 -- :only mapped to leader+o
 map('n', '<leader>o', ':only<cr>', { desc = 'Close other windows' })
 
+-- The reversible half of the pair above: zoom this window to fill the tab,
+-- press again to put the other windows back (lua/functions.lua).
+map('n', '<Leader>O', function() require('functions').toggle_zoom() end,
+	{ silent = true, desc = 'Toggle window zoom' })
+
 -- Pre-fill the cmdline with :q (no <CR>: press Enter yourself, or add ! / a
 -- count first)
 map('n', '<leader>q', ':q', { desc = 'Prefill :q' })

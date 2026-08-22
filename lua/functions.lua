@@ -368,6 +368,42 @@ function M.cycle_numbering()
 	vim.o.relativenumber = transitions[key].relativenumber
 end
 
+-- Zoom the current window to fill the tab page, or put back the layout a
+-- previous zoom replaced: :only without losing the other windows.
+--
+-- szw/vim-maximizer is the usual plugin for this. winrestcmd() is the entire
+-- trick, so this is the plugin, minus a vimscript dependency in a config
+-- that is moving the other way.
+--
+-- State lives in tab-scoped variables because the layout is per tab page:
+-- zooming in one tab must not restore over another's. It is abandoned if the
+-- window count changed while zoomed -- winrestcmd() addresses windows by
+-- number, so replaying it after a split or a close would resize the wrong
+-- ones; 'wincmd =' is the honest fallback there.
+function M.toggle_zoom()
+	local saved = vim.t.zoom_layout
+	local windows = vim.fn.winnr('$')
+
+	if saved then
+		local was = vim.t.zoom_windows
+		vim.t.zoom_layout = nil
+		vim.t.zoom_windows = nil
+		vim.cmd(windows == was and saved or 'wincmd =')
+		return
+	end
+
+	-- A lone window is already as big as it gets, and saving its layout would
+	-- leave the toggle stuck in the zoomed state with nothing to restore.
+	if windows == 1 then
+		return
+	end
+
+	vim.t.zoom_layout = vim.fn.winrestcmd()
+	vim.t.zoom_windows = windows
+	vim.cmd('wincmd _') -- full height
+	vim.cmd('wincmd |') -- full width
+end
+
 -- Auto-clearing of the message area (see plugin/autocmds.lua).
 --
 -- Anything echoed below the statusline stays on screen until something else
