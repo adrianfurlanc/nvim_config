@@ -22,6 +22,20 @@ return {
 				end,
 			})
 
+			-- Fugitive: move the status window to a full-height vertical split
+			-- on the right, instead of the short horizontal one :Git opens at
+			-- the bottom. FileType is the hook because it only ever fires for
+			-- the status buffer (fugitive#BufReadStatus is the single place
+			-- setting this filetype) and it fires however the window was
+			-- opened, including on the reload after staging. Already rightmost
+			-- and full height makes it a no-op.
+			vim.api.nvim_create_autocmd('FileType', {
+				pattern = 'fugitive',
+				callback = function()
+					vim.cmd.wincmd('L')
+				end,
+			})
+
 			-- Fugitive: prevent buffer list from being swamped
 			vim.api.nvim_create_autocmd('BufReadPost', {
 				pattern = 'fugitive://*',
