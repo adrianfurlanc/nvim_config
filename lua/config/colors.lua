@@ -128,6 +128,28 @@ vim.api.nvim_create_autocmd('ColorScheme', {
 -- showed a gray underline rather than a hint-colored one. It keeps the faded
 -- gray foreground that marks a symbol as dead, and gains the hint undercurl --
 -- unused is reported as a Hint by lua_ls and tsserver alike.
+--
+-- CocInlayHint is the type and parameter annotations coc draws inline as
+-- virtual text -- the [1]/[2] index hints in a lua table, `: string` after a
+-- parameter. Pinned here because left alone it is not a color of its own:
+-- plugin/coc.vim builds it with CreateHighlight('CocInlayHint', 'CocHintSign',
+-- 'SignColumn'), i.e. CocHintSign's foreground over SignColumn's background.
+-- CocHintSign is pinned four lines below to gruvbox bright aqua, so the hints
+-- inherited that and came out the same teal as a hint diagnostic -- annotations
+-- competing with the code they annotate, and indistinguishable from real
+-- reported hints.
+--
+-- #928374 instead: gruvbox's neutral gray, already this file's value for text
+-- that is present but subordinate (InactiveText on blurred windows,
+-- CocUnusedHighlight's dead symbols, qfLineNr). Inlay hints are not in the
+-- file -- they are the editor talking -- so they should read as quieter than
+-- every real token around them.
+--
+-- CocInlayHintParameter and CocInlayHintType need no lines of their own: coc
+-- declares them as `hi default link ... CocInlayHint`, so they follow this.
+-- Plain `highlight` rather than `highlight!` for the same reason the signs
+-- above use it -- coc registers all of these with `hi default`, which by
+-- definition never overrides a group that already has a value.
 local function diagnostic_colors()
 	vim.cmd([[
 		highlight CocErrorSign   gui=NONE cterm=NONE guifg=#fb4934 guibg=NONE ctermfg=167 ctermbg=NONE
@@ -146,6 +168,8 @@ local function diagnostic_colors()
 		highlight CocHintHighlight    gui=undercurl cterm=undercurl guisp=#8ec07c
 
 		highlight! CocUnusedHighlight gui=undercurl cterm=undercurl guisp=#8ec07c guifg=#928374 ctermfg=245
+
+		highlight CocInlayHint gui=NONE cterm=NONE guifg=#928374 guibg=NONE ctermfg=245 ctermbg=NONE
 	]])
 end
 diagnostic_colors()
