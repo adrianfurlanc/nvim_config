@@ -343,6 +343,26 @@ return {
 	-- {/* */} while the script parts keep //.
 	{ 'folke/ts-comments.nvim', opts = {}, event = 'VeryLazy' },
 	{ 'tpope/vim-eunuch', event = 'VeryLazy' },                -- Helpers for unix
+	{
+		-- Keeps a Session.vim in the cwd continuously up to date once :Obsession
+		-- has been run there, so reopening with `nvim -S` restores the buffers,
+		-- splits and tabs as they were.
+		--
+		-- Here for tmux-resurrect, which restores panes but leaves the editor in
+		-- them empty on its own. Its nvim strategy only runs `nvim -S` when a
+		-- Session.vim already exists in the pane's directory -- it never writes
+		-- one (see strategies/nvim_session.sh in the plugin) -- and obsession is
+		-- what writes it. See the plugin block at the bottom of ~/.tmux.conf.
+		--
+		-- VeryLazy is safe here, which is not obvious: `nvim -S` sources the
+		-- session during startup, before this loads, and the session ends with a
+		-- `let g:this_obsession` line that resumes tracking. That line only sets
+		-- a variable, so it does not need the plugin present -- obsession reads
+		-- it whenever it loads and picks the session back up. Measured, not
+		-- assumed: `nvim -S` leaves g:this_obsession set either way.
+		'tpope/vim-obsession',
+		event = 'VeryLazy',
+	},
 	{ 'tpope/vim-repeat', event = 'VeryLazy' },                -- Allow plugins to repeat
 	{ 'tpope/vim-surround', event = 'VeryLazy' },              -- Add/Change surround characters
 	{ 'tpope/vim-unimpaired', event = 'VeryLazy' },            -- Provides several pair
