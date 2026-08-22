@@ -308,6 +308,34 @@ return {
 	},
 	-- Yank highlighting is native now: a TextYankPost autocmd calling
 	-- vim.hl.on_yank() in lua/config/autocmds.lua replaced vim-highlightedyank.
+	{
+		-- A replace-with-register operator: <Leader>R + a motion overwrites what
+		-- the motion covers with the register's contents, in one step instead of
+		-- the select-then-paste two-stepper. <Leader>RR takes the whole line,
+		-- doubling the operator the way dd and yy do.
+		--
+		-- <Leader>P ("0p, lua/config/keymaps.lua) already answers the register
+		-- clobbering this is usually reached for: pasting over a selection sends
+		-- the replaced text to the unnamed register, so the next paste hands out
+		-- the wrong thing, and reading from "0 sidesteps it. What "0p cannot do
+		-- is compose. An operator takes any motion or text object, so <Leader>Rr=
+		-- drops a yanked value onto the right-hand side of an assignment, and
+		-- vim-repeat carries '.' to the next one.
+		--
+		-- Not <Leader>r, the key upstream documents -- that cycles line numbering
+		-- here. Not gr either: gr itself is unmapped, but nvim 0.11 claimed the
+		-- gr* prefix for its built-in LSP maps (grn rename, gra code action, grr
+		-- references, gri implementation, grt type definition). Those are inert
+		-- while coc owns the LSP, so nothing breaks today -- but taking gr would
+		-- leave a timeout on the prefix and a trap for the day coc goes.
+		'gbprod/substitute.nvim',
+		keys = {
+			{ '<Leader>R', function() require('substitute').operator() end, desc = 'Replace with register' },
+			{ '<Leader>RR', function() require('substitute').line() end, desc = 'Replace line with register' },
+			{ '<Leader>R', mode = 'x', function() require('substitute').visual() end, desc = 'Replace selection with register' },
+		},
+		opts = {},
+	},
 	{ 'tommcdo/vim-lion', event = 'VeryLazy' },                -- Aligns text to a character with the gl and gL operators
 	-- Commenting (gc/gcc) is built into Neovim 0.10+, so vim-commentary is
 	-- gone. ts-comments extends the native operator with treesitter-aware

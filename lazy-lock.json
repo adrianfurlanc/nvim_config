@@ -27,6 +27,7 @@
   "project.nvim": { "branch": "main", "commit": "8c6bad7d22eef1b71144b401c9f74ed01526a4fb" },
   "rainbow-delimiters.nvim": { "branch": "master", "commit": "012f1480cd9a5fc99fce7678e0a536421a53fc46" },
   "scalpel": { "branch": "main", "commit": "25147091c1c2a6475b0cef93ed38fee575fcffb5" },
+  "substitute.nvim": { "branch": "main", "commit": "0d2077398552f069abccbd964a26dd7cd26882cd" },
   "tagbar": { "branch": "master", "commit": "07cb8247487208124978daff8e13624667635457" },
   "targets.vim": { "branch": "master", "commit": "6325416da8f89992b005db3e4517aaef0242602e" },
   "terminus": { "branch": "main", "commit": "47247474350e3c2cae12220ef06bed975b7be2dc" },
