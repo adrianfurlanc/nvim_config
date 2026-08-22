@@ -48,6 +48,12 @@ map('n', 'k', function()
 	return 'gk'
 end, { expr = true })
 
+-- Wrap h/j/k/l in the "Hold it Cowboy!" guard (lua/mappings/cowboy.lua).
+-- Must run after the j/k mappings above: it captures whatever each key is
+-- mapped to at this moment and reproduces it, so calling it earlier would
+-- wrap the builtins and the visual-row movement would be lost.
+require('mappings.cowboy').setup()
+
 -- Cycle through Quickfix list
 map('n', '<Up>', ':cprevious<CR>', { silent = true })
 map('n', '<Down>', ':cnext<CR>', { silent = true })
