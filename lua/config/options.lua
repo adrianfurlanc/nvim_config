@@ -5,6 +5,7 @@
 vim.opt.autoindent = true
 vim.opt.backspace = { 'indent', 'eol', 'start' }    -- Backspace over indent, line breaks and insert start
 vim.opt.clipboard = 'unnamed'                       -- Yank and paste with the system clipboard
+vim.opt.confirm = true                              -- Prompt to save instead of failing :q on unsaved changes
 vim.opt.copyindent = true                           -- Reuse existing indent characters on autoindent
 vim.opt.cursorline = true                           -- Highlight the current line
 -- 'append', not '=': '=' would drop nvim's own diff defaults, and 'filler'
