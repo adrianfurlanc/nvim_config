@@ -25,6 +25,19 @@ end
 
 vim.g.mapleader = " "
 
+-- Autocmd profiler, off unless asked for:
+--
+--     NVIM_AUTOCMD_PROFILE=1 nvim
+--
+-- then :DebugAutocmds once something has felt slow. It sits above the requires
+-- below rather than with the other helpers because it wraps
+-- nvim_create_autocmd, and has to do that before the first autocmd is
+-- registered to see the whole config. Costs nothing when the variable is
+-- unset -- the module is not even read from disk. (lua/autocmd_profile.lua)
+if vim.env.NVIM_AUTOCMD_PROFILE then
+	require("autocmd_profile").setup()
+end
+
 -- Options, mappings and autocommands load before the plugins so everything
 -- keeps the pre-lazy.nvim source order: a plugin that defines the same
 -- mapping (e.g. vim-tmux-navigator's <C-h/j/k/l>) still wins over ours.
