@@ -7,11 +7,43 @@ return {
 		'raimondi/delimitmate', -- Autoclose brackets, parentheses, quotes, etc.
 		event = 'InsertEnter',
 		init = function()
-			-- Closetag / DelimitMate
-			-- vim.g.closetag_filenames = '*.html,*.xhtml,*.phtml'
-			-- vim.g.closetag_xhtml_filenames = '*.xhtml,*.jsx'
+			-- No <:> pair here on purpose: a bare '<' is a less-than far more
+			-- often than it is a tag, and closing tags is nvim-ts-autotag's job
+			-- below, which knows from the parse tree which one it is looking at.
 			vim.g.delimitMate_matchpairs = '(:),[:],{:}'
 		end,
+	},
+	{
+		-- The tag half of the pair above: delimitmate closes brackets and
+		-- quotes, this closes and renames tags. Replaces the closetag config
+		-- that sat commented out in delimitmate's init for years.
+		--
+		-- Treesitter-driven rather than regex, which is what makes it usable in
+		-- JSX: it reads the node under the cursor, so typing inside a {}
+		-- expression or an attribute string is left alone, and renaming an
+		-- opening tag renames its partner however far below it sits.
+		--
+		-- Every markup filetype this config edits is covered by the plugin's own
+		-- defaults: svelte and typescriptreact carry their own node patterns,
+		-- and astro, vue, markdown, javascript and typescript are aliased onto
+		-- one of those two (see config/plugin.lua upstream). Only .mdx needs an
+		-- alias added below.
+		--
+		-- `ft` rather than InsertEnter: the plugin attaches from a FileType
+		-- autocmd it creates in setup(), so it has to be loaded by the time
+		-- FileType fires for the buffer. lazy re-emits the event after loading,
+		-- which is what makes that work for the file you opened nvim on.
+		'windwp/nvim-ts-autotag',
+		ft = {
+			'astro', 'html', 'javascript', 'javascriptreact', 'markdown',
+			'markdown.mdx', 'svelte', 'typescript', 'typescriptreact',
+			'vue', 'xml',
+		},
+		opts = {
+			-- vim-mdx-js sets the compound filetype 'markdown.mdx', which the
+			-- plugin's own alias table (keyed on plain 'markdown') never matches.
+			aliases = { ['markdown.mdx'] = 'html' },
+		},
 	},
 	{
 		-- Replaces vim-sneak (s + 2 chars) and clever-f (f/F/t/T repeat with
