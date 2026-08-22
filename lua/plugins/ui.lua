@@ -403,7 +403,36 @@ return {
 			},
 		},
 	},
-	{ 'lilydjwg/colorizer' },  -- Colorizes hex color codes (#rrggbb / #rgb) inline in the buffer
+	{
+		-- Replaced lilydjwg/colorizer (Vimscript, #rrggbb/#rgb/rgb()/names).
+		-- Same job -- paint each color code with the color it names -- plus the
+		-- forms that plugin predates: hsl(), CSS var() usages, ANSI codes and
+		-- Tailwind class names, the latter two mattering for the astro projects.
+		-- :HighlightColors Toggle turns it off per-session.
+		--
+		-- Safe next to the pinned-color regime in lua/config/colors.lua, and
+		-- verified so in its source: every group it defines is its own
+		-- nvim-highlight-colors-* name via nvim_set_hl(default = true), all
+		-- marks live in its own extmark namespace, and it registers no
+		-- ColorScheme autocmd -- it never reads or writes a scheme group. The
+		-- markdown gruvbox<->OceanicNext switch (bottom of colors.lua) runs
+		-- `hi clear` over its groups like everyone else's, but its BufEnter
+		-- refresh redefines them; the one cosmetic edge is a color file
+		-- visible in another split while the scheme flips, whose chips go
+		-- plain until that window is entered again.
+		'brenoprata10/nvim-highlight-colors',
+		event = { 'BufReadPre', 'BufNewFile' },
+		opts = {
+			-- The colorizer look: the code's background becomes the color,
+			-- with the foreground flipped light/dark for contrast.
+			render = 'background',
+			-- Regex-based tailwind matching; the plugin turns this path off
+			-- by itself if a tailwindcss LSP client attaches (coc's tailwind
+			-- extension is not one, so the regexes stay in charge here).
+			enable_tailwind = true,
+			enable_ansi = true,
+		},
+	},
 	{ 'wincent/pinnacle' },    -- Utility functions for tweaking and reading Vim highlight groups
 	{ 'wincent/terminus' },    -- Enhanced terminal integration — cursor shape, mouse support, bracketed paste
 }
