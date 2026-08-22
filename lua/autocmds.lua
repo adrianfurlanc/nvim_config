@@ -57,23 +57,27 @@ end
 function M.focus_window()
 	vim.opt_local.cursorline = true
 
-	-- Detached before the blacklist is consulted, unlike the matches below.
-	-- The guard reads 'filetype', so a window blurred as one filetype and
-	-- focused as another -- :Gdiffsplit turning a file into a 'diff' buffer,
-	-- a scratch buffer becoming 'qf' -- would take the blacklist branch on
-	-- the way back in and keep a namespace nothing would ever remove, leaving
-	-- a focused window with grey signs. Detaching a namespace that was never
-	-- attached is a no-op, so there is nothing to lose by doing it always.
+	-- Neither undo consults the blacklist, though both of the corresponding
+	-- dos in blur_window() above do. The guard reads 'filetype', and a window
+	-- can change filetype while it sits blurred -- :Gdiffsplit turns a file
+	-- into a 'diff' buffer, a scratch buffer becomes 'qf'. Asked again on the
+	-- way back in, the guard then answers the opposite of what it answered on
+	-- the way out, the cleanup is skipped, and the window stays dimmed while
+	-- focused. Nothing would ever undo it either: every later visit asks the
+	-- same question and gets the same answer, so the dimming is permanent.
+	--
+	-- Neither undo needs the guard to be cheap. Detaching a namespace that was
+	-- never attached is a no-op, and the loop below already does nothing on a
+	-- window with no w:wincent_matches to delete. Gate what you apply, not what
+	-- you remove.
 	vim.api.nvim_win_set_hl_ns(vim.api.nvim_get_current_win(), 0)
 
-	if M.should_colorcolumn() then
-		if vim.w.wincent_matches then
-			for _, match in ipairs(vim.w.wincent_matches) do
-				-- In testing, not getting any error here, but being ultra-cautious.
-				pcall(vim.fn.matchdelete, match)
-			end
-			vim.w.wincent_matches = {}
+	if vim.w.wincent_matches then
+		for _, match in ipairs(vim.w.wincent_matches) do
+			-- In testing, not getting any error here, but being ultra-cautious.
+			pcall(vim.fn.matchdelete, match)
 		end
+		vim.w.wincent_matches = {}
 	end
 end
 
