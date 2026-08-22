@@ -177,6 +177,10 @@ return {
 			{ 'ii', mode = { 'x', 'o' } },
 			{ 'al', mode = { 'x', 'o' } },
 			{ 'il', mode = { 'x', 'o' } },
+			{ 'a=', mode = { 'x', 'o' } },
+			{ 'i=', mode = { 'x', 'o' } },
+			{ 'l=', mode = { 'x', 'o' } },
+			{ 'r=', mode = { 'x', 'o' } },
 			{ ']m', mode = { 'n', 'x', 'o' } },
 			{ '[m', mode = { 'n', 'x', 'o' } },
 			{ ']M', mode = { 'n', 'x', 'o' } },
@@ -340,6 +344,46 @@ return {
 			map({ 'x', 'o' }, 'il', function()
 				select.select_textobject('@loop.inner')
 			end, 'Select inner loop')
+
+			-- Assignment objects, from josean-dev/dev-environment-files.
+			-- `r=` is the one that earns its key: it takes the value alone, so
+			-- `cir=` retypes a right-hand side without touching the name. `l=`
+			-- takes the name, `a=` the whole declaration.
+			--
+			-- `i=` is NOT the value, despite the a/i pairing every other object
+			-- here follows. ecma's textobjects.scm captures @assignment.inner
+			-- twice -- once on the value of a declaration that has one, and again
+			-- on the bare `name:` of any variable_declarator -- and the second
+			-- pattern wins the scoring, so `i=` resolves to the name. Measured,
+			-- not assumed: on `const total = price * quantity`, `i=` yields
+			-- `total` and `r=` yields `price * quantity`. Reach for `r=`.
+			--
+			-- Object properties come free: ecma captures `pair` nodes as
+			-- @assignment.* too, so all four work on `key: value` inside an object
+			-- literal. (His config adds an after/queries/ecma override defining a
+			-- separate @property capture for that, mapped to a:/i:/l:/r:. Upstream
+			-- covers it now, so there is no query file to copy.)
+			--
+			-- Declarations only. The query captures lexical_declaration (const,
+			-- let) and object pairs; a plain reassignment (`total = recompute()`)
+			-- is an assignment_expression and matches nothing, so `lookahead`
+			-- sends these keys forward to the next declaration instead of failing
+			-- where you stand. Upstream's capture, not something to fix here.
+			--
+			-- Left charwise deliberately -- no selection_modes entry above. An
+			-- assignment is usually part of a line, not the whole of one.
+			map({ 'x', 'o' }, 'a=', function()
+				select.select_textobject('@assignment.outer')
+			end, 'Select outer assignment')
+			map({ 'x', 'o' }, 'i=', function()
+				select.select_textobject('@assignment.inner')
+			end, 'Select assignment name (not the value -- see r=)')
+			map({ 'x', 'o' }, 'l=', function()
+				select.select_textobject('@assignment.lhs')
+			end, 'Select assignment left-hand side')
+			map({ 'x', 'o' }, 'r=', function()
+				select.select_textobject('@assignment.rhs')
+			end, 'Select assignment right-hand side')
 
 			-- ]m/[m/]M/[M rather than the ]f/]c the README suggests: ]f/[f are
 			-- unimpaired's next/previous file in the directory, and ]c/[c are
