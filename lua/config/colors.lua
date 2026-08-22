@@ -76,6 +76,58 @@ local active_bg = vim.api.nvim_create_augroup('ActiveWindowBackground', {})
 vim.api.nvim_create_autocmd('ColorScheme', { group = active_bg, callback = dim_inactive_windows })
 vim.api.nvim_create_autocmd({ 'ColorScheme', 'Syntax' }, { group = active_bg, callback = clear_normal_links })
 
+-- Signs and virtual text are the two surfaces blur_window() (lua/autocmds.lua)
+-- cannot reach. It dims by painting InactiveText over the window with
+-- matchaddpos(), and a match only recolours real buffer characters -- so the
+-- coc diagnostic icon in the gutter, the message coc echoes past the end of
+-- the line, and the inlay hints it draws inline all kept full colour in a
+-- window that was otherwise grey. Raising the match priority does not help:
+-- signs and extmarks are a different drawing layer, not a lower priority
+-- within the same one (measured -- 1000 and 5000 render identically).
+--
+-- Per-window highlight namespaces do reach them. nvim_win_set_hl_ns() makes
+-- one window resolve groups through a namespace first and fall back to the
+-- global definitions for whatever the namespace leaves undefined -- so a
+-- namespace carrying nothing but grey copies of the leaky groups dims exactly
+-- those, in exactly the windows it is attached to. blur_window() attaches it
+-- and focus_window() detaches it; this only fills it in.
+--
+-- Reached by name rather than passed between the two files:
+-- nvim_create_namespace() hands back the same id for a name it has already
+-- seen, so both can ask for 'InactiveWindow' and get the one namespace.
+--
+-- The greys are InactiveText's, per scheme, so a dimmed sign matches the
+-- dimmed text beside it. Re-filled on ColorScheme like everything else here,
+-- because the two schemes need different greys.
+--
+-- The *Highlight undercurl groups are deliberately absent: those underline
+-- real code, which the overlay already recolours, and a squiggle marks a
+-- genuine problem worth keeping legible in a window you are about to return
+-- to. Add them here with `sp = grey` if you would rather they went quiet too.
+local function dim_namespace()
+	local ns = vim.api.nvim_create_namespace('InactiveWindow')
+	local grey = (vim.g.colors_name or '') == 'OceanicNext' and '#65737e' or '#928374'
+	for _, group in ipairs({
+		-- the icons in the gutter
+		'CocErrorSign', 'CocWarningSign', 'CocInfoSign', 'CocHintSign',
+		-- the message echoed past the end of the line
+		'CocErrorVirtualText', 'CocWarningVirtualText',
+		'CocInfoVirtualText', 'CocHintVirtualText',
+		-- the inline type and parameter annotations
+		'CocInlayHint', 'CocInlayHintParameter', 'CocInlayHintType',
+	}) do
+		-- No bg: these are all guibg=NONE globally, and an unset background in
+		-- a namespace entry stays unset, so the window's own Normal/NormalNC
+		-- shows through exactly as it does when the group is not overridden.
+		vim.api.nvim_set_hl(ns, group, { fg = grey })
+	end
+end
+dim_namespace()
+vim.api.nvim_create_autocmd('ColorScheme', {
+	group = vim.api.nvim_create_augroup('DimNamespace', {}),
+	callback = dim_namespace,
+})
+
 -- Syntax highlighting
 vim.cmd([[
 	hi clear SignColumn

@@ -6,6 +6,14 @@ vim.g.WincentColorColumnBlacklist = { 'diff', 'undotree', 'oil', 'qf' }
 vim.g.WincentCursorlineBlacklist = { 'command-t' }
 vim.g.WincentMkviewFiletypeBlacklist = { 'diff', 'hgcommit', 'gitcommit' }
 
+-- The namespace dim_namespace() in lua/config/colors.lua fills with grey
+-- copies of the groups the matchaddpos() overlay below cannot recolour --
+-- coc's gutter icons, its end-of-line messages and its inlay hints, all of
+-- them signs or virtual text rather than buffer characters. Fetched by name:
+-- nvim_create_namespace() returns the existing id for a name it has already
+-- seen, so this is the same namespace that file fills, not a second empty one.
+local inactive_ns = vim.api.nvim_create_namespace('InactiveWindow')
+
 local M = {}
 
 function M.should_colorcolumn()
@@ -37,11 +45,27 @@ function M.blur_window()
 		end
 
 		vim.w.wincent_matches = matches
+
+		-- What the overlay above cannot touch: signs and virtual text are
+		-- drawn from extmarks, not from the buffer's characters, so no match
+		-- recolours them at any priority. Resolving this window's highlights
+		-- through the grey namespace does.
+		vim.api.nvim_win_set_hl_ns(vim.api.nvim_get_current_win(), inactive_ns)
 	end
 end
 
 function M.focus_window()
 	vim.opt_local.cursorline = true
+
+	-- Detached before the blacklist is consulted, unlike the matches below.
+	-- The guard reads 'filetype', so a window blurred as one filetype and
+	-- focused as another -- :Gdiffsplit turning a file into a 'diff' buffer,
+	-- a scratch buffer becoming 'qf' -- would take the blacklist branch on
+	-- the way back in and keep a namespace nothing would ever remove, leaving
+	-- a focused window with grey signs. Detaching a namespace that was never
+	-- attached is a no-op, so there is nothing to lose by doing it always.
+	vim.api.nvim_win_set_hl_ns(vim.api.nvim_get_current_win(), 0)
+
 	if M.should_colorcolumn() then
 		if vim.w.wincent_matches then
 			for _, match in ipairs(vim.w.wincent_matches) do
