@@ -124,6 +124,28 @@ end, { desc = 'Yank line (charwise, no newline)' })
 -- Y (yank to end of line) needs no mapping: nvim maps it to y$ by default,
 -- unlike vim, where it was a synonym for yy.
 
+-- Keep small deletes out of the registers. Deleting writes the unnamed
+-- register just like yanking does, and 'clipboard' is 'unnamed' here
+-- (options.lua), so every x otherwise lands in the system clipboard too,
+-- replacing whatever was copied last. The black-hole register ("_) discards
+-- instead. <Leader>D and <Leader>C are the operator forms for bigger silent
+-- edits -- <Leader>Dd deletes a line, <Leader>Ciw retypes a word, and none
+-- of it is kept.
+--
+-- Adapted from craftzdog/dotfiles. His keys are <Leader>d/c/p, all three
+-- taken here (coc's diagnostic float, ListToggle's quickfix toggle, the
+-- file-path echo above), hence the capitals.
+map('n', 'x', '"_x')
+map({ 'n', 'x' }, '<Leader>D', '"_d', { desc = 'Delete to black hole' })
+map({ 'n', 'x' }, '<Leader>C', '"_c', { desc = 'Change to black hole' })
+
+-- Paste what was last YANKED, stepping over any deletes since: yanks also
+-- land in register 0, which deletes never touch. The visual-mode version is
+-- the repeatable paste-over: replacing a selection with plain p sends the
+-- replaced text to the unnamed register, so the next p pastes the wrong
+-- thing -- "0p hands out the original yank every time.
+map({ 'n', 'x' }, '<Leader>P', '"0p', { desc = 'Paste last yank' })
+
 -- Find merge conflict markers
 map('n', '<leader>fc', [[/\v^[<|=>]{7}( .*|$)<CR>]], { desc = 'Find merge conflicts' })
 
