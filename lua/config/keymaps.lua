@@ -180,6 +180,13 @@ map('n', '[]', 'k$][%?}<CR>', { remap = true, desc = 'Previous function end' })
 -- It used to double as a comment-line alias for gcc, but ListToggle maps
 -- over it when it loads at VeryLazy; native gcc/gc cover commenting.
 
+-- Join lines without moving the cursor. Native J drops it at the seam, so a
+-- run of joins walks it rightwards across the growing line; the mark z
+-- round-trip puts it back where the join started. Costs mark z, which nothing
+-- here uses -- vim-signature displays it if you set it by hand, and that
+-- display is all it would lose.
+map('n', 'J', 'mzJ`z', { desc = 'Join lines, keep cursor position' })
+
 -- Move lines around
 map('n', '<C-Up>', function() require('mappings.normal').move_up() end, { silent = true })
 map('n', '<C-Down>', function() require('mappings.normal').move_down() end, { silent = true })
