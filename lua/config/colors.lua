@@ -177,6 +177,62 @@ vim.api.nvim_create_autocmd('ColorScheme', {
 	callback = search_colors,
 })
 
+-- Man pages. These are rendered by nvim now, which is set up in
+-- ~/.config/zsh/.zshrc (ZDOTDIR, not ~/.zshrc) with:
+--
+--     export MANPAGER="nvim +Man!"
+--
+-- That file is not under version control, so the line is recorded here too:
+-- without it man goes back through less and every group below is dead weight.
+--
+-- It also puts the colored-man-pages zsh plugin out of the picture: the plugin
+-- worked by handing less a set of LESS_TERMCAP_* escapes, and less no longer
+-- sees the page. Its two visible effects were bold text in red
+-- (LESS_TERMCAP_md, \e[1;31m) and underlined text in green (LESS_TERMCAP_us,
+-- \e[1;32m) -- both bright, because iTerm2's "Use Bright Bold" promotes a bold
+-- ANSI colour to its bright twin, so 31/32 landed on #fb4934/#b8bb26 rather
+-- than the dim #cc241d/#98971a. syntax/man.vim gives
+-- manBold/manUnderline/manItalic attributes but no colour, so the colour is
+-- what gets added back here.
+--
+-- Bold is the one deliberate departure from the plugin. It drew bold red, but
+-- Search (above) is red underlined text, so a non-selected match landing
+-- inside bold text differed from its surroundings by the underline alone.
+-- Red is spoken for twice over in a man buffer (Search and manSectionHeading),
+-- green three times (manUnderline, manHeader, manSubHeading), yellow by
+-- CurSearch, purple by manOptionDesc and aqua by manReference; that leaves
+-- orange and blue, and blue is the one further from red.
+--
+-- manItalic follows manUnderline because less had no italic of its own:
+-- mandoc's italics arrived as the same underline escape and came out green.
+-- The attributes are left in place, so nvim still tells the three apart where
+-- less flattened underline and italic together.
+--
+-- syntax/man.vim declares its versions with `highlight default`, which never
+-- overrides a group that already has a value, so these win without needing
+-- `highlight!`. Re-applied on ColorScheme because :colorscheme runs
+-- `hi clear` first.
+local function man_colors()
+	if (vim.g.colors_name or '') == 'OceanicNext' then
+		vim.cmd([[
+			highlight manBold      gui=bold      cterm=bold      guifg=#6699cc ctermfg=68
+			highlight manUnderline gui=underline cterm=underline guifg=#99c794 ctermfg=114
+			highlight manItalic    gui=italic    cterm=italic    guifg=#99c794 ctermfg=114
+		]])
+	else
+		vim.cmd([[
+			highlight manBold      gui=bold      cterm=bold      guifg=#83a598 ctermfg=109
+			highlight manUnderline gui=underline cterm=underline guifg=#b8bb26 ctermfg=142
+			highlight manItalic    gui=italic    cterm=italic    guifg=#b8bb26 ctermfg=142
+		]])
+	end
+end
+man_colors()
+vim.api.nvim_create_autocmd('ColorScheme', {
+	group = vim.api.nvim_create_augroup('ManColors', {}),
+	callback = man_colors,
+})
+
 -- flash.nvim's jump labels (lua/plugins/editing.lua). All four groups are
 -- defined here rather than left to the plugin, for two reasons:
 --
