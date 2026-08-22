@@ -383,5 +383,8 @@ return {
 	{
 		'mbbill/undotree', -- Visualize the undo history as a tree
 		cmd = { 'UndotreeToggle', 'UndotreeShow' },
+		keys = {
+			{ '<leader>u', '<cmd>UndotreeToggle<CR>', desc = 'Toggle undo tree' },
+		},
 	},
 }
