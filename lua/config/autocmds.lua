@@ -71,3 +71,11 @@ autocmd('TextYankPost', {
 	group = clear_messages,
 	callback = function() require('functions').schedule_message_clear() end,
 })
+
+-- Briefly highlight the yanked text (replaces vim-highlightedyank). Same
+-- IncSearch highlight the plugin used; timeout is the flash duration in ms
+-- (the plugin's default was 1000, which lingered).
+autocmd('TextYankPost', {
+	group = augroup('YankHighlight'),
+	callback = function() vim.hl.on_yank({ timeout = 200 }) end,
+})

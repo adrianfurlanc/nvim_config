@@ -274,7 +274,8 @@ return {
 			})
 		end,
 	},
-	{ 'machakann/vim-highlightedyank', event = 'VeryLazy' },   -- Preview selected yanked text
+	-- Yank highlighting is native now: a TextYankPost autocmd calling
+	-- vim.hl.on_yank() in lua/config/autocmds.lua replaced vim-highlightedyank.
 	{ 'tommcdo/vim-lion', event = 'VeryLazy' },                -- Aligns text to a character with the gl and gL operators
 	-- Commenting (gc/gcc) is built into Neovim 0.10+, so vim-commentary is
 	-- gone. ts-comments extends the native operator with treesitter-aware
