@@ -45,27 +45,40 @@ end
 -- ...) paint Normal's explicit guibg over NormalNC in non-current windows,
 -- punching active-colored holes in the dimming. Clear such groups so those
 -- tokens fall back to the window's own foreground and background.
-local function clear_normal_links()
-	local group
-	for _, line in ipairs(vim.split(vim.fn.execute('silent highlight'), '\n')) do
-		-- :highlight wraps long entries onto continuation lines that start
-		-- with whitespace, so a group's name and its `links to` clause can
-		-- land on separate lines. Operator does exactly that -- it carries
-		-- nvim's own default guifg alongside gruvbox's link -- and it is the
-		-- one group that matters here, since @operator and jsOperator both
-		-- reach Normal through it. Carrying the last name seen forward
-		-- attributes the continuation to the group it belongs to.
-		group = line:match('^(%S+)%s+xxx') or group
-		if group and line:find(' links to Normal$') then
-			-- Cleared outright rather than just unlinked: `highlight! link X
-			-- NONE` drops the link but restores the group's built-in default
-			-- (Operator's is guifg=NvimLightGrey2, a cooler gray than
-			-- gruvbox's #ebdbb2), so ==, ===, .. and && would still read as a
-			-- different color from the code around them. An empty group has
-			-- nothing to draw with and falls through to the window's own
-			-- Normal / NormalNC -- matching foreground, and no background to
-			-- punch a hole with.
-			vim.api.nvim_set_hl(0, group, {})
+-- Groups whose syntax has already been scanned since the last colorscheme.
+-- Clearing below is global and sticks, so a second scan for a syntax already
+-- seen can only re-clear what is already empty.
+local scanned = {}
+
+local function clear_normal_links(ev)
+	-- A colorscheme redefines every group, so anything cleared before is back
+	-- and every syntax has to be looked at again.
+	if not ev or ev.event == 'ColorScheme' then
+		scanned = {}
+	else
+		-- Syntax fires with the syntax name in <amatch>, and repeatedly for one
+		-- name: syntax files `runtime` each other (the astro one pulls in
+		-- typescript, css and html), and every include fires the event again.
+		-- Only the first of those can introduce a link this has not seen.
+		if scanned[ev.match] then
+			return
+		end
+		scanned[ev.match] = true
+	end
+
+	-- nvim_get_hl over every group rather than `:highlight` parsed out of
+	-- vim.fn.execute(). Same groups found -- measured against gruvbox: Ignore,
+	-- NvimSpacing, Operator, WinSeparator either way -- for a third of the
+	-- time, because the old one made nvim render ~3500 definitions as display
+	-- text only to match two patterns per line back out of them.
+	--
+	-- The remaining cost is the call itself, not the loop: building the table
+	-- is 1.43ms of a 1.43ms scan. Naming the four groups outright would be
+	-- 0.003ms, and is what the memo above buys instead -- without giving up
+	-- catching a group some future colorscheme or syntax file links to Normal.
+	for name, hl in pairs(vim.api.nvim_get_hl(0, {})) do
+		if hl.link == 'Normal' then
+			vim.api.nvim_set_hl(0, name, {})
 		end
 	end
 end
