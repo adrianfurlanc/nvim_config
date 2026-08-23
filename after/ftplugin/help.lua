@@ -1,0 +1,19 @@
+-- Land on the tag at the top of the window rather than a third of the way
+-- down it.
+--
+-- 'scrolloff' is 40 globally (lua/config/options.lua), which is more rows than
+-- a full-height split has. Vim cannot honour it, so it centres the cursor
+-- instead -- fine while editing, where the point is context on both sides, but
+-- wrong in a help page, where everything you came for is *below* the tag you
+-- jumped to.
+--
+-- It also rules out the obvious fix: zt cannot lift the cursor any higher than
+-- 'scrolloff' allows, so at 40 it does nothing whatsoever. Measured in a
+-- 37-row window -- the tag sits 11 rows down before zt and 11 rows down after
+-- it. Drop the option and no zt is needed either, because :help already puts
+-- the tag on the first row once nothing is pushing it away.
+--
+-- Window-local, so nothing else moves: the code window beside it keeps 40, the
+-- true global stays 40, and windows opened later still get 40 (all verified).
+-- Raise this to 2 or 3 for a little context above the tag.
+vim.opt_local.scrolloff = 0
