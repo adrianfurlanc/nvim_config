@@ -85,6 +85,41 @@ return {
 					['ctrl-l'] = actions.file_sel_to_ll,
 				}),
 			},
+			-- <CR> opens the help page in a full-height vertical split beside the
+			-- code, instead of the wide, short horizontal one :help gives.
+			--
+			-- Not actions.help_vert on its own -- that is what the shipped ctrl-v
+			-- binding already is, and it only works while no help window is open.
+			-- :vert help REUSES an existing help window and ignores the modifier:
+			-- measured, with help already open the layout is
+			-- file(120x16) | HELP(120x20) both before and after, so a second
+			-- lookup lands back in the horizontal window the first one made.
+			--
+			-- wincmd L is what actually moves it, the same trick the fugitive
+			-- status window uses in lua/plugins/git.lua: it turns the reused
+			-- horizontal window into a rightmost full-height vertical one
+			-- (120x20 -> 60x37), and does nothing on the fresh case, where
+			-- 'splitright' has already put :vert help exactly there.
+			--
+			-- The buftype guard stops a failed lookup from moving whatever window
+			-- we happen to be standing in instead.
+			--
+			-- A per-picker actions table MERGES into that picker's defaults,
+			-- unlike globals.actions.files above, which replaces wholesale -- so
+			-- ctrl-s, ctrl-v and ctrl-t survive untouched (verified).
+			helptags = {
+				actions = {
+					['enter'] = function(selected, opts)
+						if not selected[1] then
+							return
+						end
+						actions.help_vert(selected, opts)
+						if vim.bo.buftype == 'help' then
+							vim.cmd.wincmd('L')
+						end
+					end,
+				},
+			},
 		}
 	end,
 	-- setup() plus the one picker fzf-lua has no builtin for: directories.
