@@ -19,7 +19,10 @@ return {
 				active = {
 					left = {
 						{ 'mode', 'paste' },
-						{ 'fugitive', 'realpath', 'readonly', 'modified' },
+						-- 'obsession' sits with 'fugitive' because both report on the
+						-- session as a whole rather than the current file, and before
+						-- the filename where the eye already goes for state.
+						{ 'fugitive', 'obsession', 'realpath', 'readonly', 'modified' },
 					},
 					right = {
 						{ 'lineinfo' },
@@ -34,6 +37,7 @@ return {
 				},
 				component_function = {
 					fugitive = 'statusline#fugitive',
+					obsession = 'statusline#obsession',
 					readonly = 'statusline#readonly',
 					filetype = 'statusline#filetype',
 					modified = 'statusline#modified',

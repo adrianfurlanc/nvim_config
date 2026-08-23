@@ -17,6 +17,18 @@ function! statusline#fileformat() abort
 	return winwidth(0) > 70 ? (&fileformat . ' ' . WebDevIconsGetFileFormatSymbol()) : ''
 endfunction
 
+" vim-obsession's session indicator: '[$]' while tracking, '[S]' when a session
+" exists but tracking is paused, empty when the project has no session at all.
+" Worth having on screen because a bare :Obsession toggles tracking off and
+" nothing else reports that -- the session file just silently stops updating.
+"
+" Guarded on exists(): obsession is lazy-loaded on VeryLazy (see
+" lua/plugins/editing.lua), so the first redraws happen before
+" ObsessionStatus() is defined, and calling it then throws E117 on every one.
+function! statusline#obsession() abort
+	return exists('*ObsessionStatus') ? ObsessionStatus() : ''
+endfunction
+
 function! statusline#fugitive() abort
 	if expand('%:t') =~? 'Tagbar\|Gundo\|NERD' || &ft =~? 'vimfiler'
 		return ''
