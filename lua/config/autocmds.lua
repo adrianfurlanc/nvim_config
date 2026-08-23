@@ -79,3 +79,19 @@ autocmd('TextYankPost', {
 	group = augroup('YankHighlight'),
 	callback = function() vim.hl.on_yank({ timeout = 200 }) end,
 })
+
+-- Feeds the <Leader>fo picker (the list is lua/mru.lua, the picker itself is
+-- in lua/plugins/fzf.lua). BufDelete only, deliberately: the list answers
+-- "what did I just close", not "where have I been", so merely switching away
+-- from a file does not promote it.
+--
+-- Worth knowing what that leaves out. BufDelete fires for :bdelete, for
+-- :bwipeout, and for vim-bufkill's :BD -- which is what bufferline's × runs,
+-- through bufkill_close() in lua/plugins/ui.lua -- so every deliberate close
+-- here is recorded. It does not fire for :q or :close: 'hidden' is on (see
+-- lua/config/options.lua), so those leave the buffer loaded and only shut the
+-- window on it. Nothing is lost by that -- the buffer is still open.
+autocmd('BufDelete', {
+	group = augroup('RecentFiles'),
+	callback = function(args) require('mru').record(args.buf) end,
+})

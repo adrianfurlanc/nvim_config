@@ -1,6 +1,45 @@
 -- fzf-lua: Lua pickers (files, grep, buffers, ...) driving the fzf binary
 -- from the Homebrew install on PATH. Replaced fzf.vim, which needed the
 -- ~/.fzf git install kept on the runtimepath in lua/config/lazy.lua.
+
+-- The <Leader>fo picker: this project's recent files, most recently closed
+-- first.
+--
+-- Not FzfLua oldfiles, which is neither. That reads v:oldfiles, so it spans
+-- every project at once -- 99 entries here, 5 of them in adrianfurlan.com --
+-- and ranks them by what the shada file recorded at the last exit, which never
+-- changes while nvim is running. lua/mru.lua supplies this session's real
+-- close order, and the cwd filter does the scoping: project.nvim has already
+-- set the cwd to the project root (lua/plugins/project.lua).
+--
+-- :FzfLua oldfiles still gives the unfiltered global list when that is wanted.
+local function recent_files()
+	local cwd = vim.fn.getcwd()
+	local paths = require('mru').recent(cwd)
+
+	if #paths == 0 then
+		return vim.notify('No recent files under ' .. vim.fn.fnamemodify(cwd, ':~'),
+			vim.log.levels.INFO)
+	end
+
+	-- Normalized against the 'oldfiles' defaults, the same trick the coc
+	-- location pickers use (lua/plugins/coc.lua): it inherits the builtin
+	-- previewer, the file icons and the standard file actions, including the
+	-- ctrl-q/ctrl-l quickfix bindings merged in below. Its '--tiebreak=index'
+	-- is what stops fzf resorting the list into its own order on an empty
+	-- query, which would throw the ordering away at the last step.
+	local opts = require('fzf-lua.config').normalize_opts({
+		cwd = cwd,
+		prompt = 'Recent> ',
+		winopts = { title = ' Recent Files ' },
+	}, 'oldfiles')
+
+	local make_entry = require('fzf-lua.make_entry')
+	require('fzf-lua').fzf_exec(vim.tbl_map(function(path)
+		return make_entry.file(path, opts)
+	end, paths), opts)
+end
+
 return {
 	'ibhagwan/fzf-lua',
 	cmd = { 'FzfLua', 'FzfDirectories' },
@@ -13,7 +52,7 @@ return {
 		{ '<leader>f/', '<cmd>FzfLua lgrep_curbuf<cr>', desc = 'Live grep current buffer' },
 		{ '<leader>fw', '<cmd>FzfLua grep_cword<cr>', desc = 'Grep word under cursor' },
 		{ '<leader>fw', '<cmd>FzfLua grep_visual<cr>', mode = 'x', desc = 'Grep visual selection' },
-		{ '<leader>fo', '<cmd>FzfLua oldfiles<cr>', desc = 'Recent files' },
+		{ '<leader>fo', recent_files, desc = 'Recent files (this project)' },
 		{ '<leader>fb', '<cmd>FzfLua buffers<cr>', desc = 'Find buffers' },
 		{ '<leader>fk', '<cmd>FzfLua keymaps<cr>', desc = 'Keymaps' },
 		{ '<leader>fr', '<cmd>FzfLua resume<cr>', desc = 'Resume last picker' },
