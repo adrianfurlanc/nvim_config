@@ -2,6 +2,34 @@
 -- from the Homebrew install on PATH. Replaced fzf.vim, which needed the
 -- ~/.fzf git install kept on the runtimepath in lua/config/lazy.lua.
 
+-- Route vim.ui.select through fzf-lua, so a plugin's "pick one of these"
+-- prompt uses the same window as every other picker here. nvim's builtin
+-- numbers the items and reads a digit off the cmdline with vim.fn.inputlist()
+-- (runtime/lua/vim/ui.lua) -- no filtering, no arrow keys.
+--
+-- Deferred rather than assigned outright. This runs at startup, when lazy
+-- imports the spec files, and fzf-lua is lazy-loaded on its keys and commands;
+-- requiring it here would pull it in on every launch and undo that. The
+-- require happens on the first prompt instead, and register() then replaces
+-- vim.ui.select with fzf-lua's own, so the indirection is paid exactly once.
+--
+-- ui_select.ui_select() is called directly rather than going back through
+-- vim.ui.select: if register() ever failed to swap the global, re-entering it
+-- would be this function calling itself forever.
+--
+-- Little in this config calls it today -- oil's sort menu (gs, twice: column
+-- then direction) and claudecode's :ClaudeCodeSelectModel, which then wants a
+-- terminal provider lua/plugins/claudecode.lua sets to 'none'. It is here for
+-- what comes later: anything added gets it for free, and native LSP code
+-- actions go through vim.ui.select the day coc goes.
+vim.ui.select = function(items, opts, on_choice)
+	local ui_select = require('fzf-lua.providers.ui_select')
+	if not ui_select.is_registered() then
+		ui_select.register(nil, true)
+	end
+	return ui_select.ui_select(items, opts, on_choice)
+end
+
 -- The <Leader>fo picker: this project's recent files, most recently closed
 -- first.
 --
