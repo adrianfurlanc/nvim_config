@@ -26,6 +26,8 @@ require('lazy').setup({
 	install = { colorscheme = { 'gruvbox' } },
 	-- No background polling for updates; check by hand with :Lazy check
 	checker = { enabled = false },
+	-- No plugin here needs luarocks, so don't bootstrap hererocks for it
+	rocks = { enabled = false },
 	performance = {
 		rtp = {
 			-- Stock runtime plugins that never get used. netrw and matchparen
