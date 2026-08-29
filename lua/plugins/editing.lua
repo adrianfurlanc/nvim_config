@@ -336,6 +336,29 @@ return {
 		},
 		opts = {},
 	},
+	{
+		-- An exchange operator: cx + a motion marks a region and highlights it,
+		-- cx + a second motion swaps the two. cxx takes the whole line, doubled
+		-- the way dd and yy are, cxc clears a first half you changed your mind
+		-- about, and visual X exchanges the selection.
+		--
+		-- The gap it fills next to <Leader>R above: substitute.nvim writes one
+		-- way, a register onto a target. Swapping two things that are both
+		-- already in the buffer still costs two registers and four steps --
+		-- yank A, yank B, paste each over the other -- and exchange makes it
+		-- cxiw on one and cxiw on the other, touching no register at all.
+		-- Reordering two function arguments or two JSX props is the everyday
+		-- case.
+		--
+		-- Visual X does take over a built-in: linewise delete of the selection,
+		-- which is what plain d over the same selection already does.
+		--
+		-- '.' repeats each half on its own (the operator runs through g@, so
+		-- this is vim's own repeat, not vim-repeat's), which is what walks the
+		-- same exchange down a list of pairs.
+		'tommcdo/vim-exchange',
+		event = 'VeryLazy',
+	},
 	{ 'tommcdo/vim-lion', event = 'VeryLazy' },                -- Aligns text to a character with the gl and gL operators
 	-- Commenting (gc/gcc) is built into Neovim 0.10+, so vim-commentary is
 	-- gone. ts-comments extends the native operator with treesitter-aware
