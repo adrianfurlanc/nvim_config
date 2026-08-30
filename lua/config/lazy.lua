@@ -32,7 +32,12 @@ require('lazy').setup({
 		rtp = {
 			-- Stock runtime plugins that never get used. netrw and matchparen
 			-- are kept: scp:///GBrowse need netrw, <Leader>m toggles matchparen.
-			disabled_plugins = { 'gzip', 'tarPlugin', 'zipPlugin', 'tohtml', 'tutor' },
+			-- rplugin is the Python/Ruby/Node/Perl bridge. The manifest at
+			-- stdpath('data')/rplugin.vim has all four sections empty -- coc
+			-- spawns its own Node process rather than registering there. Take
+			-- it back out if a remote plugin is ever installed: the
+			-- :UpdateRemotePlugins command it needs comes from this runtime file.
+			disabled_plugins = { 'gzip', 'tarPlugin', 'zipPlugin', 'tohtml', 'tutor', 'rplugin' },
 		},
 	},
 })
