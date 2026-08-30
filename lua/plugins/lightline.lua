@@ -8,7 +8,6 @@ return {
 	{
 		'itchyny/lightline.vim', -- Light and configurable statusline/tabline plugin
 		dependencies = {
-			'cocopon/lightline-hybrid.vim',  -- Hybrid theme for lightline
 			'shinchu/lightline-gruvbox.vim', -- Gruvbox theme for light-line
 			'josa42/vim-lightline-coc',      -- coc.nvim diagnostic indicators (errors/warnings) for lightline statusbar
 		},
