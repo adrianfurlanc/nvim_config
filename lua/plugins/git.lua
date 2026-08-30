@@ -4,7 +4,13 @@
 -- line, and coc's priority of 10 beats either of them). The git workflow runs
 -- through fugitive below, where the diff is the point rather than a margin
 -- note: :Gstatus to stage, :Gdiffsplit to see the change, :Gblame for history.
--- :VcsJump (vcs-jump, at the bottom) is what jumps to a changed hunk.
+--
+-- Jumping between hunks in an ordinary buffer is deliberately unavailable too.
+-- wincent/vcs-jump did that, and came out once six months of shada history
+-- showed :VcsJump had never once been run -- the diff gets read in fugitive,
+-- where the hunks are already laid out, rather than by walking the file for
+-- them. What would restore it is a gutter plugin, which is where this comment
+-- came in.
 return {
 	{
 		-- Stays eager: the lightline branch component (statusline#fugitive)
@@ -46,8 +52,4 @@ return {
 		end,
 	},
 	{ 'tpope/vim-rhubarb' }, -- GitHub :GBrowse handler for vim-fugitive
-	{
-		'wincent/vcs-jump', -- Jumps to changed/conflicted hunks in a Git or Mercurial repo
-		cmd = 'VcsJump',
-	},
 }
