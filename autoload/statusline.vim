@@ -2,7 +2,12 @@
 " autoloaded on first statusline redraw rather than at startup).
 
 function! statusline#filetype() abort
-	return winwidth(0) > 70 ? (strlen(&filetype) ? &filetype . ' ' . WebDevIconsGetFileTypeSymbol() : 'no ft') : ''
+	" 'default': v:true guarantees a string back, so the concat below is safe
+	" for unknown extensions and for the empty buffer. get_icon() also returns
+	" a highlight group as a second value; v:lua keeps only the first.
+	return winwidth(0) > 70 ? (strlen(&filetype)
+		\ ? &filetype . ' ' . v:lua.require'nvim-web-devicons'.get_icon(expand('%:t'), expand('%:e'), {'default': v:true})
+		\ : 'no ft') : ''
 endfunction
 
 function! statusline#readonly() abort
@@ -14,7 +19,11 @@ function! statusline#modified() abort
 endfunction
 
 function! statusline#fileformat() abort
-	return winwidth(0) > 70 ? (&fileformat . ' ' . WebDevIconsGetFileFormatSymbol()) : ''
+	" OS logo per line-ending convention, reproducing the glyphs vim-devicons
+	" drew here: dos = Windows (U+E70F), unix and mac = Apple (U+E711).
+	" vim-devicons chose Apple for 'unix' by checking s:isDarwin(); on Linux it
+	" showed a distro logo instead, which this fixed table does not do.
+	return winwidth(0) > 70 ? (&fileformat . ' ' . get({'unix': '', 'dos': '', 'mac': ''}, &fileformat, '')) : ''
 endfunction
 
 " vim-obsession's session indicator: '[$]' while tracking, '[S]' when a session

@@ -265,17 +265,6 @@ return {
 		end,
 	},
 	{
-		-- Stays eager: statusline#filetype/fileformat call WebDevIcons*
-		-- functions on the first redraw.
-		'ryanoasis/vim-devicons', -- Pretty Icons
-		init = function()
-			-- Add Unicode folder icons (📁-style glyphs from a Nerd Font) to
-			-- directory nodes in NERDTree, so folders are visually
-			-- distinguishable from files.
-			vim.g.WebDevIconsUnicodeDecorateFolderNodes = 1
-		end,
-	},
-	{
 		-- Owns 'tabline'. Lightline is told to keep its hands off it in
 		-- lua/plugins/lightline.lua (g:lightline.enable.tabline), and this
 		-- replaced the buffer list bling/vim-bufferline used to render inside
