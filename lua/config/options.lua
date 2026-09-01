@@ -48,6 +48,11 @@ vim.opt.synmaxcol = 200                             -- Only syntax-highlight the
 vim.opt.termguicolors = true                        -- 24-bit color in the terminal
 vim.opt.tildeop = true                              -- Make ~ (toggle case) work as an operator
 vim.opt.title = true                                -- Set the terminal window title
+-- 'ttimeoutlen' is 10, not nvim's default of 50, and is deliberately not set in
+-- this file: wincent/terminus runs `if &ttimeoutlen > 10 | set ttimeoutlen=10`
+-- unconditionally and after this file, so any larger value set here is
+-- overwritten a moment later -- which is silently what the old `= 50` line got.
+-- A value of 10 or less would survive that guard. See lua/plugins/ui.lua.
 vim.opt.undodir = vim.fn.expand('~/.config/nvim/undodir') -- Where undo history is stored
 vim.opt.undofile = true                             -- Persist undo history across sessions
 vim.opt.virtualedit = 'block'                       -- Free cursor movement in visual block mode

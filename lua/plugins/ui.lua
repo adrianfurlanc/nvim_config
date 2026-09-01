@@ -423,5 +423,17 @@ return {
 		},
 	},
 	{ 'wincent/pinnacle' },    -- Utility functions for tweaking and reading Vim highlight groups
-	{ 'wincent/terminus' },    -- Enhanced terminal integration — cursor shape, mouse support, bracketed paste
+	{
+		-- Kept for three things nvim doesn't do itself, not the terminal
+		-- integration the name suggests -- cursor shape, bracketed paste and
+		-- ttymouse are all behind `if !has('nvim')` and never run here:
+		--   * FocusGained -> checktime, which is what makes 'autoread' fire on
+		--     returning to the terminal. nvim registers no such autocmd, so a
+		--     file changed by `git checkout` stays stale without this.
+		--   * mouse=a, against nvim's default of nvi (adds cmdline mode).
+		--   * ttimeoutlen=10, against nvim's 50. Set unconditionally and with
+		--     no g: var to opt out, so this is where that value comes from --
+		--     lua/config/options.lua deliberately no longer claims otherwise.
+		'wincent/terminus',
+	},
 }
