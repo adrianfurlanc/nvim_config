@@ -83,7 +83,7 @@ return {
 			-- below; see the note there for why it has to be.
 			--
 			-- No exclude list on purpose. The defaults already cover help, man
-			-- and gitcommit, and everything else worth skipping here -- tagbar,
+			-- and gitcommit, and everything else worth skipping here --
 			-- undotree, quickfix, terminals -- is a 'nofile' buffer, which the
 			-- default buftype list excludes outright. oil is the one thing that
 			-- slips through: its buffers are 'acwrite', so no buftype rule
@@ -254,14 +254,6 @@ return {
 					'markdown',
 				},
 			})
-		end,
-	},
-	{
-		-- Stays eager: the lightline tagbar component calls tagbar#currenttag()
-		-- on every redraw, which errors if the plugin isn't on the runtimepath.
-		'majutsushi/tagbar', -- A class outline viewer for Vim
-		init = function()
-			vim.g.tagbar_compact = 1
 		end,
 	},
 	{

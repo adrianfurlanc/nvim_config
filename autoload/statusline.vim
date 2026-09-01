@@ -39,9 +39,6 @@ function! statusline#obsession() abort
 endfunction
 
 function! statusline#fugitive() abort
-	if expand('%:t') =~? 'Tagbar\|Gundo\|NERD' || &ft =~? 'vimfiler'
-		return ''
-	endif
 	let branch = exists('*FugitiveHead') ? FugitiveHead() : ''
 	if branch ==# ''
 		return ''

@@ -27,11 +27,10 @@ return {
 						{ 'lineinfo' },
 						{ 'coc_errors', 'coc_warnings', 'coc_info', 'coc_hints', 'coc_status' },
 						{ 'percent' },
-						{ 'fileformat', 'tagbar', 'filetype' },
+						{ 'fileformat', 'filetype' },
 					},
 				},
 				component = {
-					tagbar = '%{tagbar#currenttag("%s", "", "f")}',
 					realpath = '%f',
 				},
 				component_function = {
