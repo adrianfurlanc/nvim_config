@@ -2,9 +2,10 @@
 -- autocmds that call them are registered in lua/config/autocmds.lua, and this
 -- module is only loaded the first time one of them fires).
 
-vim.g.WincentColorColumnBlacklist = { 'diff', 'undotree', 'oil', 'qf' }
-vim.g.WincentCursorlineBlacklist = { 'command-t' }
-vim.g.WincentMkviewFiletypeBlacklist = { 'diff', 'hgcommit', 'gitcommit' }
+-- Filetypes that don't get the inactive-window dimming below. Named for what it
+-- does rather than for 'colorcolumn', which nothing in this config ever sets --
+-- the old name is why focus_window()'s comment reads as being about something else.
+vim.g.WincentDimBlacklist = { 'diff', 'undotree', 'oil', 'qf' }
 
 -- The namespace dim_namespace() in lua/config/colors.lua fills with grey
 -- copies of the groups the matchaddpos() overlay below cannot recolour --
@@ -16,13 +17,13 @@ local inactive_ns = vim.api.nvim_create_namespace('InactiveWindow')
 
 local M = {}
 
-function M.should_colorcolumn()
-	return not vim.tbl_contains(vim.g.WincentColorColumnBlacklist, vim.bo.filetype)
+function M.should_dim()
+	return not vim.tbl_contains(vim.g.WincentDimBlacklist, vim.bo.filetype)
 end
 
 function M.blur_window()
 	vim.opt_local.cursorline = false
-	if M.should_colorcolumn() then
+	if M.should_dim() then
 		-- Instead of unconditionally resetting, append to existing array.
 		-- This allows us to gracefully handle duplicate autocmds.
 		local matches = vim.w.wincent_matches or {}
