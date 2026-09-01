@@ -414,7 +414,6 @@ return {
 			enable_ansi = true,
 		},
 	},
-	{ 'wincent/pinnacle' },    -- Utility functions for tweaking and reading Vim highlight groups
 	{
 		-- Kept for three things nvim doesn't do itself, not the terminal
 		-- integration the name suggests -- cursor shape, bracketed paste and
