@@ -1,4 +1,4 @@
-" Lightline component functions (referenced by name in plugin/lightline.vim;
+" Lightline component functions (referenced by name in lua/plugins/lightline.lua;
 " autoloaded on first statusline redraw rather than at startup).
 
 function! statusline#filetype() abort

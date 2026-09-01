@@ -16,8 +16,7 @@
 --                             to them by autoload function name)
 -- ============================================================
 
--- Byte-compiled module cache (nvim 0.9+; vim.loader is nil on 0.8.3 so this
--- is a no-op for now). Must run before the first require() to have any
+-- Byte-compiled module cache. Must run before the first require() to have any
 -- effect — the cache only speeds up module loads that happen after it.
 if vim.loader then
 	vim.loader.enable()

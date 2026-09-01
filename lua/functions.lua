@@ -310,7 +310,7 @@ function M.plaintext()
 	vim.api.nvim_create_autocmd('BufWinLeave', { buffer = 0, callback = function() vim.fn.clearmatches() end })
 end
 
--- Custom fold summary line, used via 'foldtext' (see plugin/settings.lua)
+-- Custom fold summary line, used via 'foldtext' (see lua/config/options.lua)
 local middot = '·'
 local raquo = '»'
 local small_l = 'ℓ'
@@ -404,13 +404,13 @@ function M.toggle_zoom()
 	vim.cmd('wincmd |') -- full width
 end
 
--- Auto-clearing of the message area (see plugin/autocmds.lua).
+-- Auto-clearing of the message area (see lua/config/autocmds.lua).
 --
 -- Anything echoed below the statusline stays on screen until something else
 -- happens to overwrite it. The autocmds that produce such output call
 -- schedule_message_clear(), which blanks the area again after 5 seconds.
 -- Two kinds of output are exempt and stay up until dismissed with <Leader>L
--- (see plugin/mappings.lua): errors, and :messages output.
+-- (see lua/config/keymaps.lua): errors, and :messages output.
 local message_timeout = 5000
 local message_retry = 1000
 local message_timer = -1

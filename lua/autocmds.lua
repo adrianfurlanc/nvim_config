@@ -1,5 +1,5 @@
 -- Autocommand handler functions (formerly autoload/autocmds.vim; the
--- autocmds that call them are registered in plugin/autocmds.lua, and this
+-- autocmds that call them are registered in lua/config/autocmds.lua, and this
 -- module is only loaded the first time one of them fires).
 
 vim.g.WincentColorColumnBlacklist = { 'diff', 'undotree', 'oil', 'qf' }

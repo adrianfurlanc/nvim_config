@@ -20,7 +20,8 @@ return {
 			-- Fugitive: allow navigating up in git tree with ..
 			-- (Lua callback wrapping vim.cmd on purpose: a `command` string
 			-- with `if ... | ... | endif` silently aborts every remaining
-			-- autocmd for that event on nvim 0.8.3)
+			-- autocmd for that event -- observed on 0.8.3, kept because the
+			-- callback is the clearer form regardless)
 			vim.api.nvim_create_autocmd('User', {
 				pattern = 'fugitive',
 				callback = function()

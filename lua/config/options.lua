@@ -13,7 +13,11 @@ vim.opt.cursorline = true                           -- Highlight the current lin
 vim.opt.diffopt:append({ 'vertical', 'iwhite' })    -- Open diffs in vertical splits; ignore whitespace changes
 vim.opt.encoding = 'utf-8'                          -- UTF-8...
 vim.opt.bomb = false                                -- ...without a byte order mark
-vim.opt.exrc = true                                 -- Read project-local .nvimrc/.exrc (restricted by 'secure')
+-- Gated by the trust list, not by 'secure' (removed in nvim): nvim prompts the
+-- first time it finds one of these and remembers the answer. The search covers
+-- the cwd AND every parent directory, and project.nvim moves the cwd as you
+-- open files. :trust manages the list; see :help vim.secure.read().
+vim.opt.exrc = true                                 -- Read project-local .nvim.lua/.nvimrc/.exrc
 vim.opt.fileformats = { 'unix', 'dos' }             -- Prefer unix (LF) line endings, then dos (CRLF)
 vim.opt.fillchars:append({ eob = ' ' })             -- Blank instead of ~ past the end of the buffer
 vim.opt.formatoptions:append('n')                   -- Recognize numbered lists when formatting
@@ -43,7 +47,7 @@ vim.opt.number = true                               -- Show line numbers
 vim.opt.report = 0                                  -- Always report how many lines changed
 vim.opt.ruler = true                                -- Show cursor position in the statusline
 vim.opt.scrolloff = 40                              -- Keep 40 lines visible around the cursor
-vim.opt.secure = true                               -- Restrict unsafe commands in exrc files
+vim.opt.secure = true                               -- No-op on nvim: 'secure' was removed (:help vim_diff)
 vim.opt.shiftwidth = 4                              -- Indent with 4 spaces
 vim.opt.tabstop = 4                                 -- Display tabs as 4 spaces
 vim.opt.shortmess:append('A')                       -- No swapfile-exists warning
