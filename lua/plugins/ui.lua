@@ -342,6 +342,18 @@ return {
 		'folke/which-key.nvim', -- Pops up a panel of available mappings after a pending prefix key
 		event = 'VeryLazy',
 		opts = {
+			-- which-key opens from its own ModeChanged autocmd whenever you enter
+			-- a visual or operator-pending mode, not from a pending prefix like
+			-- everywhere else -- so the panel is not answering a half-typed
+			-- command there, it is volunteering the whole ~140-entry visual list.
+			-- Its default defers only V and <C-V>, which is why V felt fine and
+			-- plain v threw that list up the instant a charwise selection
+			-- started. Deferring all three settles it; the panel still appears
+			-- the moment a real prefix such as <Leader> is pressed with a
+			-- selection up, which is the job it is actually for.
+			defer = function(ctx)
+				return ctx.mode == 'v' or ctx.mode == 'V' or ctx.mode == '<C-V>'
+			end,
 			icons = {
 				-- Mapping icons come from substring rules in which-key's
 				-- icons.lua, matched against the desc, so which rows get one is
