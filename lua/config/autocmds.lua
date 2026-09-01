@@ -88,9 +88,9 @@ autocmd('TextYankPost', {
 -- Worth knowing what that leaves out. BufDelete fires for :bdelete, for
 -- :bwipeout, and for vim-bufkill's :BD -- which is what bufferline's × runs,
 -- through bufkill_close() in lua/plugins/ui.lua -- so every deliberate close
--- here is recorded. It does not fire for :q or :close: 'hidden' is on (see
--- lua/config/options.lua), so those leave the buffer loaded and only shut the
--- window on it. Nothing is lost by that -- the buffer is still open.
+-- here is recorded. It does not fire for :q or :close: 'hidden' is on (nvim's
+-- default), so those leave the buffer loaded and only shut the window on it.
+-- Nothing is lost by that -- the buffer is still open.
 autocmd('BufDelete', {
 	group = augroup('RecentFiles'),
 	callback = function(args) require('mru').record(args.buf) end,
