@@ -304,10 +304,26 @@ function M.plaintext()
 	-- Ideally would keep 'list' set, and restrict 'listchars' to just show
 	-- whitespace errors, but 'listchars' is global and I don't want to go through
 	-- the hassle of saving and restoring.
-	vim.api.nvim_create_autocmd('BufWinEnter', { buffer = 0, command = [[match Error /\s\+$/]] })
-	vim.api.nvim_create_autocmd('InsertEnter', { buffer = 0, command = [[match Error /\s\+\%#\@<!$/]] })
-	vim.api.nvim_create_autocmd('InsertLeave', { buffer = 0, command = [[match Error /\s\+$/]] })
-	vim.api.nvim_create_autocmd('BufWinLeave', { buffer = 0, callback = function() vim.fn.clearmatches() end })
+	--
+	-- Grouped, and this buffer's entries cleared before they are re-added.
+	-- Ungrouped they were recreated on every FileType for the buffer, so a plain
+	-- :edit! on a markdown file went 9 -> 13 -> 17 -> 21 buffer-local autocmds,
+	-- every one of them still firing. Vim has only three match slots, so the
+	-- duplicates overwrote each other and nothing ever looked wrong.
+	--
+	-- `clear = false` on the group is load-bearing: the default would wipe every
+	-- OTHER plaintext buffer's entries whenever a new one was opened. Scoping
+	-- nvim_clear_autocmds() to group AND buffer is what makes the reset
+	-- per-buffer. One augroup for all of them, rather than one named per bufnr --
+	-- augroups are not cleaned up when a buffer closes, so that version grows a
+	-- new one for every prose file opened, for the life of the session.
+	local buf = vim.api.nvim_get_current_buf()
+	local group = vim.api.nvim_create_augroup('PlaintextMatches', { clear = false })
+	vim.api.nvim_clear_autocmds({ group = group, buffer = buf })
+	vim.api.nvim_create_autocmd('BufWinEnter', { group = group, buffer = buf, command = [[match Error /\s\+$/]] })
+	vim.api.nvim_create_autocmd('InsertEnter', { group = group, buffer = buf, command = [[match Error /\s\+\%#\@<!$/]] })
+	vim.api.nvim_create_autocmd('InsertLeave', { group = group, buffer = buf, command = [[match Error /\s\+$/]] })
+	vim.api.nvim_create_autocmd('BufWinLeave', { group = group, buffer = buf, callback = function() vim.fn.clearmatches() end })
 end
 
 -- Custom fold summary line, used via 'foldtext' (see lua/config/options.lua)
