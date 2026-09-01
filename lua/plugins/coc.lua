@@ -195,18 +195,13 @@ return {
 		end
 		vim.keymap.set('n', 'K', show_documentation, { silent = true })
 
-		-- Rename symbol, code-action menu, and apply the preferred quickfix for the
-		-- diagnostic on the current line
-		vim.keymap.set('n', '<Leader>rn', '<Plug>(coc-rename)', { remap = true })
-		-- Actions for the whole line rather than <Plug>(coc-codeaction-cursor).
-		-- coc asks the server about a range and passes the diagnostics
-		-- intersecting it as context; -cursor sends an empty range at the
-		-- cursor, -line sends the line. Asking about the line means the
-		-- cursor's column stops mattering, which matches how nvim's native
-		-- vim.lsp.buf.code_action() behaves.
-		vim.keymap.set('n', '<Leader>ca', '<Plug>(coc-codeaction-line)', { remap = true })
-		vim.keymap.set('x', '<Leader>ca', '<Plug>(coc-codeaction-selected)', { remap = true })
-		vim.keymap.set('n', '<Leader>qf', '<Plug>(coc-fix-current)', { remap = true })
+		-- No keys for rename, code actions or the preferred quickfix. They were
+		-- <Leader>rn, <Leader>ca and <Leader>qf, and each made the toggle it sat
+		-- on top of -- <Leader>r, <Leader>c, <Leader>q -- wait a full
+		-- 'timeoutlen' before firing. The plugs are still there
+		-- (<Plug>(coc-rename), (coc-codeaction-line), (coc-codeaction-selected),
+		-- (coc-fix-current)) if any of them earns a key later; it would want one
+		-- that is not a prefix of an existing mapping.
 
 		-- Format the buffer / organize imports on demand
 		vim.api.nvim_create_user_command('Format', function()

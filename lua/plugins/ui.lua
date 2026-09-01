@@ -367,14 +367,21 @@ return {
 				-- with every icon empty it collapses to nothing.
 				mappings = false,
 			},
-			-- vim-visual-star-search maps <Leader>* without a desc, so the
-			-- panel falls back to the raw rhs: a ~90-column execute/vimgrep
-			-- one-liner. Columns are sized to the longest label, and a column
-			-- that wide fits only once, which collapsed the whole <Leader>
-			-- panel to a single column. A desc-only spec entry relabels the
-			-- existing mapping without redefining it.
+			-- Labels for mappings made by plugins that never set a desc, so the
+			-- panel would otherwise print the raw rhs. A desc-only spec entry
+			-- relabels an existing mapping without redefining it.
+			--
+			-- vim-visual-star-search's <Leader>* is the one that forced this:
+			-- its rhs is a ~90-column execute/vimgrep one-liner, and since
+			-- which-key sizes columns to the longest label, a column that wide
+			-- fits only once -- collapsing the whole <Leader> panel to a single
+			-- column. ListToggle's two are merely unreadable rather than
+			-- destructive; both plugins are Vimscript and predate the desc
+			-- field, so there is no line in this config to attach one to.
 			spec = {
 				{ '<Leader>*', desc = 'Vimgrep word/selection in project', mode = { 'n', 'x' } },
+				{ '<Leader>c', desc = 'Toggle quickfix list' },
+				{ '<Leader>l', desc = 'Toggle location list' },
 			},
 			win = {
 				-- The panel is normally pinned to the bottom of the window at up

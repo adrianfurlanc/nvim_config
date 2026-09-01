@@ -17,8 +17,18 @@ map('n', '<CR>', function()
 	return '<CR>'
 end, { expr = true })
 
--- Use <Leader>s instead of default <Leader>e:
+-- Use <Leader>s instead of scalpel's default <Leader>e. Both modes need a line
+-- of their own: plugin/scalpel.vim guards them independently, each with its own
+-- hasmapto() check, so mapping only the normal-mode <Plug> left it free to go on
+-- creating <Leader>e for visual. Not a timeout conflict -- the <Leader>e{w,s,v,t}
+-- "edit in this directory" family below is normal-mode, so the two never met --
+-- but one key meaning two unrelated things depending on the mode, and the comment
+-- here claiming a move that only half happened.
+--
+-- Both are claimed before scalpel loads (this file runs at startup, the plugin at
+-- VeryLazy), so its hasmapto() checks find them and it creates neither default.
 map('n', '<Leader>s', '<Plug>(Scalpel)', { remap = true, desc = 'Substitute word' })
+map('x', '<Leader>s', '<Plug>(ScalpelVisual)', { remap = true, desc = 'Substitute selection' })
 
 -- Toggle show/hide invisible chars
 map('n', '<leader>i', ':set list!<cr>', { desc = 'Toggle invisible chars' })
@@ -75,9 +85,6 @@ map('n', '<leader>q', ':q', { desc = 'Prefill :q' })
 -- <leader>p -- Show the path of the current file (mnemonic: path; useful when
 -- you have a lot of splits and the status line gets truncated).
 map('n', '<Leader>p', ":echo expand('%:p:h') . '/'<CR>", { desc = 'Show file path' })
-
--- Edit vimrc in new buffer
-map('n', '<leader>mv', ':edit $MYVIMRC<CR>', { desc = 'Edit init.lua' })
 
 -- Clears the search register
 map('n', '<Leader>/', ':nohlsearch<CR>', { desc = 'Clear search highlight' })
@@ -218,8 +225,11 @@ map('v', '>', '>gv')
 -- Make dot work over visual line selections
 map('x', '.', ':norm.<CR>')
 
--- Execute a macro over visual line selections
-map('x', 'Q', ":'<,'>:normal @q<CR>")
+-- Execute a macro over the selected lines. No range spelled out: a visual
+-- mapping beginning with ':' already gets '<,'> inserted, so writing one here
+-- too produced :'<,'>'<,'>:normal @q on the cmdline. It ran -- nvim's address
+-- parser accepts the duplicate -- but flashed the doubled range on every use.
+map('x', 'Q', ':normal @q<CR>', { desc = 'Run macro q over selection' })
 
 -- Move lines around. The leading ':' (rather than <Cmd>) is deliberate: it
 -- leaves Visual mode, which is what sets '< and '> to the current selection.

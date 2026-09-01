@@ -326,43 +326,14 @@ return {
 	-- Yank highlighting is native now: a TextYankPost autocmd calling
 	-- vim.hl.on_yank() in lua/config/autocmds.lua replaced vim-highlightedyank.
 	{
-		-- A replace-with-register operator: <Leader>R + a motion overwrites what
-		-- the motion covers with the register's contents, in one step instead of
-		-- the select-then-paste two-stepper. <Leader>RR takes the whole line,
-		-- doubling the operator the way dd and yy do.
-		--
-		-- <Leader>P ("0p, lua/config/keymaps.lua) already answers the register
-		-- clobbering this is usually reached for: pasting over a selection sends
-		-- the replaced text to the unnamed register, so the next paste hands out
-		-- the wrong thing, and reading from "0 sidesteps it. What "0p cannot do
-		-- is compose. An operator takes any motion or text object, so <Leader>Rr=
-		-- drops a yanked value onto the right-hand side of an assignment, and
-		-- vim-repeat carries '.' to the next one.
-		--
-		-- Not <Leader>r, the key upstream documents -- that cycles line numbering
-		-- here. Not gr either: gr itself is unmapped, but nvim 0.11 claimed the
-		-- gr* prefix for its built-in LSP maps (grn rename, gra code action, grr
-		-- references, gri implementation, grt type definition). Those are inert
-		-- while coc owns the LSP, so nothing breaks today -- but taking gr would
-		-- leave a timeout on the prefix and a trap for the day coc goes.
-		'gbprod/substitute.nvim',
-		keys = {
-			{ '<Leader>R', function() require('substitute').operator() end, desc = 'Replace with register' },
-			{ '<Leader>RR', function() require('substitute').line() end, desc = 'Replace line with register' },
-			{ '<Leader>R', mode = 'x', function() require('substitute').visual() end, desc = 'Replace selection with register' },
-		},
-		opts = {},
-	},
-	{
 		-- An exchange operator: cx + a motion marks a region and highlights it,
 		-- cx + a second motion swaps the two. cxx takes the whole line, doubled
 		-- the way dd and yy are, cxc clears a first half you changed your mind
 		-- about, and visual X exchanges the selection.
 		--
-		-- The gap it fills next to <Leader>R above: substitute.nvim writes one
-		-- way, a register onto a target. Swapping two things that are both
-		-- already in the buffer still costs two registers and four steps --
-		-- yank A, yank B, paste each over the other -- and exchange makes it
+		-- The gap it fills: swapping two things that are both already in the
+		-- buffer costs two registers and four steps otherwise -- yank A, yank B,
+		-- paste each over the other -- and exchange makes it
 		-- cxiw on one and cxiw on the other, touching no register at all.
 		-- Reordering two function arguments or two JSX props is the everyday
 		-- case.
@@ -412,7 +383,23 @@ return {
 		'artnez/vim-wipeout', -- Close all buffers & tabs
 		cmd = 'Wipeout',
 	},
-	{ 'qpkorr/vim-bufkill', event = 'VeryLazy' },              -- Unload/delete/wipe buffers without closing the window or split
+	{
+		-- Unload/delete/wipe buffers without closing the window or split.
+		--
+		-- Only :BD is used here, from bufkill_close() in lua/plugins/ui.lua,
+		-- which is what bufferline's × button runs. The plugin's own <Leader>b*
+		-- family is off: bd, bw, bun, bundo, bb, bf, ba and three ! variants --
+		-- ten keys nothing in this config calls, none carrying a desc, so
+		-- which-key listed them by raw <Plug> name. <Leader>bun was also a
+		-- prefix of <Leader>bundo, the last leader-key collision in the config.
+		--
+		-- The commands are unaffected: bufkill defines :BD, :BUN, :BW and :BA
+		-- at plugin/bufkill.vim:220-223, above the mapping guard this flag
+		-- controls at :243.
+		'qpkorr/vim-bufkill',
+		event = 'VeryLazy',
+		init = function() vim.g.BufKillCreateMappings = 0 end,
+	},
 	{
 		'Valloric/ListToggle', -- Toggles the quickfix list and location-list open/closed with simple keybindings
 		event = 'VeryLazy',
