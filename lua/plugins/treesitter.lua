@@ -347,8 +347,18 @@ return {
 
 			-- Assignment objects, from josean-dev/dev-environment-files.
 			-- `r=` is the one that earns its key: it takes the value alone, so
-			-- `cir=` retypes a right-hand side without touching the name. `l=`
+			-- `cr=` retypes a right-hand side without touching the name. `l=`
 			-- takes the name, `a=` the whole declaration.
+			--
+			-- Operator then object, with no `i` between them: `cr=`, not `cir=`.
+			-- Worth naming the wrong form because it fails confusingly rather
+			-- than beeping: `c` `i` starts an inner object, `r` matches nothing
+			-- after it so the operator aborts, and the `=` is then left over as a
+			-- fresh normal-mode key -- which is a which-key prefix, thanks to
+			-- unimpaired's =p/=P/=s, so the panel opens and it looks as though
+			-- the text object triggered it. Measured on
+			-- `const skillColor = "crimson";`: ca= takes the lot, ci= and l= the
+			-- name, cr= the value, and cir= does nothing at all.
 			--
 			-- `i=` is NOT the value, despite the a/i pairing every other object
 			-- here follows. ecma's textobjects.scm captures @assignment.inner
