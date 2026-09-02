@@ -9,6 +9,14 @@ return {
 	-- a yarn build.
 	'neoclide/coc.nvim',
 	branch = 'release',
+	-- Snippet definitions, read off the runtimepath by coc-snippets. A
+	-- dependency rather than a spec of its own: it is data -- 129 .snippets
+	-- files and an inert plugin/ file that sets three g:snips_* placeholders
+	-- then finishes on version >= 704 -- and it exists in this config only for
+	-- that extension. lazy loads dependencies before their parent, so the files
+	-- are on the rtp before coc's node process starts looking, which it cannot
+	-- do until well after this loads anyway.
+	dependencies = { 'honza/vim-snippets' },
 	-- Pinned 2026-08-07: the next release build (1245b4a7, built from
 	-- master 2026-08-05) never finishes initializing when the plugin is
 	-- sourced late, which the VeryLazy event below does. Its new

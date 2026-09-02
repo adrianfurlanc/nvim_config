@@ -168,10 +168,11 @@ map('n', 'c*', '*Ncgn')
 
 map('n', '<Leader>v', 'gv', { desc = 'Reselect last selection' })
 
--- [w/]w and [W/]W are free: they walked ALE's issues, and ALE is disabled
--- (its spec is kept, unloaded, in lua/plugins/misc.lua). The <Plug> targets
--- never existed, so the keys sat there timing out and advertising themselves
--- in which-key. Diagnostics are coc's now, on [g/]g (see lua/plugins/coc.lua).
+-- [w/]w and [W/]W are free: they walked ALE's issues, and ALE is gone --
+-- dropped outright in 1a7758d after a spell sitting disabled, so there is no
+-- spec to point at any more. The <Plug> targets never existed, so the keys sat
+-- there timing out and advertising themselves in which-key. Diagnostics are
+-- coc's now, on [g/]g (see lua/plugins/coc.lua).
 
 -- Toggle Folds
 -- map('n', '<Tab>', 'za')
