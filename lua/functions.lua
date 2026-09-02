@@ -103,11 +103,40 @@ function M.lint(compiler)
 	end
 	write_current_buffer()
 
+	-- :compiler is buffer-local and does not undo itself, so :Eslint in a .ts
+	-- buffer left that buffer's 'makeprg' as ESLint's -- and a later bare :make
+	-- then ran the wrong tool, quietly, long after anything connected the two.
+	-- Saved and put back around the call, which is what compiler_spec() above
+	-- already does for the merged runner; this path just never used it.
+	--
+	-- Restoring straight after :Make is safe rather than lucky. dispatch reads
+	-- 'makeprg' to build the command and calls dispatch#compiler_options() for
+	-- the errorformat, both synchronously, and stores the result on the request
+	-- (autoload/dispatch.vim:874) before :Make returns. Measured with a
+	-- throwaway compiler: restore immediately and the quickfix entry still
+	-- parses with the right file, line, column and type.
+	--
+	-- Only b:current_compiler is saved. :compiler without a bang does not set
+	-- g:current_compiler at all -- verified, it stays nil -- so there is nothing
+	-- global to put back.
+	--
+	-- pcall so the restore runs even if :Make throws; dispatch's own
+	-- compiler_options() uses try/finally for the same reason.
+	local makeprg, errorformat = vim.bo.makeprg, vim.bo.errorformat
+	local current = vim.b.current_compiler
+
 	vim.cmd('compiler ' .. compiler)
 	-- vim-dispatch is lazy-loaded on :Make (see lua/plugins/dispatch.lua), so this
 	-- is also what pulls it in; it runs the build asynchronously and populates
 	-- the quickfix list when it finishes.
-	vim.cmd('Make ' .. vim.fn.shellescape(root .. (target_glob[compiler] or '')))
+	local ok, err = pcall(vim.cmd, 'Make ' .. vim.fn.shellescape(root .. (target_glob[compiler] or '')))
+
+	vim.bo.makeprg, vim.bo.errorformat = makeprg, errorformat
+	vim.b.current_compiler = current
+
+	if not ok then
+		error(err, 0)
+	end
 end
 
 -- What :Lint runs for each filetype. Where several are listed it is because
