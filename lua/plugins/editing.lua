@@ -366,7 +366,39 @@ return {
 		'tpope/vim-obsession',
 		event = 'VeryLazy',
 	},
-	{ 'tpope/vim-repeat', event = 'VeryLazy' },                -- Allow plugins to repeat
+	{
+		-- Autoload-only at this commit: the repo is one file,
+		-- autoload/repeat.vim, with no plugin/ directory at all -- so lazy's load
+		-- puts the folder on the runtimepath and sources nothing. The '.', u, U
+		-- and <C-R> remaps sit at the bottom of that file, behind vim's
+		-- load-on-demand, which is what the runtime below is for: without it they
+		-- do not exist until some other plugin's first repeat#set() call drags
+		-- the file in.
+		--
+		-- That call would come from whichever of surround, unimpaired or lion was
+		-- pressed first, and nothing in this config calls repeat#set any more (see
+		-- the treesj spec above) -- so '.' was vim's own or vim-repeat's depending
+		-- on what the session happened to have touched, and a session touching
+		-- none of the three never loaded it at all. Sourcing it here makes the
+		-- VeryLazy above mean what it looks like it means.
+		--
+		-- Determinism, not a fix: nothing was broken without it. Vim sources the
+		-- file before running the function that pulled it in, so the first ds"
+		-- always registered and repeated correctly. Note also that g:loaded_repeat
+		-- is useless as a readiness test either way -- it is set by the very file
+		-- it would be gating -- so pcall a repeat#set() rather than checking it.
+		--
+		-- Measured: the runtime call is 0.37-0.45ms, and 20 interleaved paired
+		-- startups with and without it came out -1.4ms (empty) and -0.9ms (79-line
+		-- .astro). Both negative, which is the measurement saying it cannot see
+		-- the difference. Eighteen dot-repeat and undo/redo/U cases behave
+		-- identically with and without.
+		'tpope/vim-repeat', -- Allow plugins to repeat
+		event = 'VeryLazy',
+		config = function()
+			vim.cmd('runtime autoload/repeat.vim')
+		end,
+	},
 	{ 'tpope/vim-surround', event = 'VeryLazy' },              -- Add/Change surround characters
 	{ 'tpope/vim-unimpaired', event = 'VeryLazy' },            -- Provides several pair
 	{ 'wellle/targets.vim', event = 'VeryLazy' },              -- Better vim text objects
