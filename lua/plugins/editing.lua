@@ -201,27 +201,19 @@ return {
 		-- both spelled with a capital L, which is what hid them from a first
 		-- look). Capitalising all three keeps them together as one family rather
 		-- than taking the two free lowercase keys and leaving the odd one out.
-		-- Each mapping registers itself with vim-repeat after running, so '.'
-		-- replays it on the block under the cursor: join one line, move to the
-		-- next, press '.'. treesj never made itself repeatable, and vim's own
-		-- repeat only remembers the last of the several edits a split makes.
-		-- The sequence is built from vim.g.mapleader by hand because
-		-- vim.keycode() expands terminal keys, not '<leader>' -- that token
-		-- only means something to the :map commands. pcall because repeat#set
-		-- does not exist until vim-repeat loads at VeryLazy.
+		-- Nothing here registers with vim-repeat, and nothing needs to: treesj
+		-- ships dot_repeat = true and routes toggle/split/join through
+		-- 'operatorfunc' + g@l itself (lua/treesj/init.lua), so '.' already
+		-- replays the last one on the block under the cursor -- join one line,
+		-- move to the next, press '.'. Three pcall(repeat#set) wrappers sat here
+		-- until 2026-09-03, on the strength of a comment saying treesj "never
+		-- made itself repeatable". It has since 950d06e; they worked, by winning
+		-- vim-repeat's tick check against a native mechanism already doing the
+		-- job, and bought nothing.
 		keys = {
-			{ '<leader>M', function()
-				require('treesj').toggle()
-				pcall(vim.fn['repeat#set'], vim.g.mapleader .. 'M')
-			end, desc = 'Split/join block' },
-			{ '<leader>S', function()
-				require('treesj').split()
-				pcall(vim.fn['repeat#set'], vim.g.mapleader .. 'S')
-			end, desc = 'Split block' },
-			{ '<leader>J', function()
-				require('treesj').join()
-				pcall(vim.fn['repeat#set'], vim.g.mapleader .. 'J')
-			end, desc = 'Join block' },
+			{ '<leader>M', function() require('treesj').toggle() end, desc = 'Split/join block' },
+			{ '<leader>S', function() require('treesj').split() end, desc = 'Split block' },
+			{ '<leader>J', function() require('treesj').join() end, desc = 'Join block' },
 		},
 		-- A config function rather than an opts table, because the astro entry
 		-- below has to require() a module out of treesj itself. An opts table is
