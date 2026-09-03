@@ -416,7 +416,9 @@ return {
 			end, 'Previous function end')
 
 			-- The one thing targets.vim cannot do: reorder arguments in place.
-			-- Dot-repeatable (the plugin routes it through 'opfunc').
+			-- Dot-repeatable, but see the operatorfunc hand-back at the end of
+			-- swap_parameter() -- upstream's route through 'opfunc' is what
+			-- would otherwise let '.' skip the guard below.
 			--
 			-- Guarded, because upstream picks its swap target by byte position
 			-- alone -- swap.lua's next_textobject filters on `start >=
@@ -456,7 +458,10 @@ return {
 				end
 			end
 
-			local function swap_parameter(forward)
+			-- Declared before the body so the operatorfunc closure below can
+			-- call back into it.
+			local swap_parameter
+			function swap_parameter(forward)
 				local buf = vim.api.nvim_get_current_buf()
 				local range = shared.textobject_at_point('@parameter.inner', 'textobjects', buf)
 				local node = range and node_at_range(buf, range)
@@ -491,6 +496,22 @@ return {
 				if sibling and sibling:parent() and sibling:parent():equal(list) then
 					local run = forward and swap.swap_next or swap.swap_previous
 					run('@parameter.inner')
+
+					-- run() goes through upstream's make_dot_repeatable
+					-- (swap.lua:201-205), which parks its own *unguarded*
+					-- closure in 'operatorfunc'. Left alone, '.' re-enters
+					-- below the sibling test above and swaps across the
+					-- function boundary this guard exists to prevent --
+					-- measured, not assumed: `first(a, b)` + `second(x, y)`
+					-- became `first(b, x)` + `second(a, y)` on the repeat.
+					-- Its g@l is fed with 'n' (queued, not immediate), so the
+					-- hand-back has to wait a tick for that keystroke to run.
+					vim.schedule(function()
+						_G._nvim_ts_guarded_swap = function()
+							swap_parameter(forward)
+						end
+						vim.o.operatorfunc = 'v:lua._nvim_ts_guarded_swap'
+					end)
 				end
 			end
 
