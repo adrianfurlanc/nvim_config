@@ -94,38 +94,62 @@ return {
 					'vue', 'yaml',
 				},
 				callback = function(args)
-					-- Scheduled so the first frame paints before the (one-time
-					-- per language) query compile runs: starting synchronously
-					-- blocked the first screen ~100ms when opening the first
-					-- ts/tsx file. pcall: don't error while a parser is still
-					-- installing.
+					local buf = args.buf
+					local ft = vim.bo[buf].filetype
+
+					-- Synchronous on purpose, and it has to run before nvim's
+					-- own syntaxset autocmd gets its turn for this FileType
+					-- (it does: syntaxset is registered after init.lua).
+					-- syntaxset skips any buffer with b:ts_highlight set --
+					-- runtime/syntax/syntax.vim -- and start() is what sets
+					-- it, so this is what keeps the regex syntax cascade from
+					-- being sourced for a buffer treesitter is about to take
+					-- over. For .astro that cascade is ~45ms a time (html,
+					-- then css.vim four times over for the scss/sass/less
+					-- includes), and it ran twice before the first paint and
+					-- once more for the reload below. Measured 2026-09-03:
+					-- `nvim Welcome.astro` 171 -> 83ms, `:edit` of an .astro
+					-- inside a session 84 -> 14ms, flat from 11 lines to 2k.
+					--
+					-- What moved rather than vanished: start() compiles the
+					-- language's highlight query the first time a session
+					-- sees it, and that now lands before the first paint
+					-- instead of after. astro's takes 1ms; the ecma family's
+					-- doesn't (javascript 29ms, typescript 50ms, tsx 65ms),
+					-- so the first .js/.ts/.tsx of a session paints that much
+					-- later -- and is usable ~25ms sooner, the cascades it no
+					-- longer pays being larger. Accepted: neither site has
+					-- them.
+					--
+					-- Start at most once per buffer. This runs twice
+					-- otherwise: nvim's own ftplugins already call start()
+					-- for lua, markdown and help, and yats.vim's ftdetect
+					-- uses `setlocal filetype=` (not setf), which re-fires
+					-- FileType on every .ts/.tsx/.mts/.cts. Each extra call
+					-- builds a second highlighter that stays registered on
+					-- the same LanguageTree and keeps running on_changedtree
+					-- on every edit. pcall: don't error while a parser is
+					-- still installing.
+					--
+					-- Checked rather than returned on, because a buffer nvim
+					-- started for us (markdown, for .mdx) still needs the
+					-- syntax restore below.
+					local started = vim.b[buf].ts_highlight
+						or pcall(vim.treesitter.start, buf)
+
+					if not (started and needs_regex_syntax[ft]) then
+						return
+					end
+
+					-- The regex reload for the indent scripts is the one
+					-- cascade this buffer still pays, and it stays scheduled
+					-- so it lands after the first paint (~65ms for astro).
+					-- The `~= ft` guard makes it idempotent, so the second
+					-- FileType on a .ts/.tsx buffer doesn't pay for a second
+					-- reload of the syntax file.
 					vim.schedule(function()
-						if not vim.api.nvim_buf_is_loaded(args.buf) then
-							return
-						end
-
-						local ft = vim.bo[args.buf].filetype
-
-						-- Start at most once per buffer. This runs twice
-						-- otherwise: nvim's own ftplugins already call start()
-						-- for lua, markdown and help, and yats.vim's ftdetect
-						-- uses `setlocal filetype=` (not setf), which re-fires
-						-- FileType on every .ts/.tsx/.mts/.cts. Each extra call
-						-- builds a second highlighter that stays registered on
-						-- the same LanguageTree and keeps running
-						-- on_changedtree on every edit.
-						--
-						-- Checked rather than returned on, because a buffer
-						-- nvim started for us (markdown, for .mdx) still needs
-						-- the syntax restore below.
-						local started = vim.b[args.buf].ts_highlight
-							or pcall(vim.treesitter.start, args.buf)
-
-						-- The `~= ft` guard makes this idempotent too, so the
-						-- second FileType on a .ts/.tsx buffer doesn't pay for
-						-- a second reload of the syntax file.
-						if started and needs_regex_syntax[ft] and vim.bo[args.buf].syntax ~= ft then
-							vim.bo[args.buf].syntax = ft
+						if vim.api.nvim_buf_is_loaded(buf) and vim.bo[buf].syntax ~= ft then
+							vim.bo[buf].syntax = ft
 						end
 					end)
 				end,
