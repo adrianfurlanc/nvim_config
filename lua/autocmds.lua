@@ -3,8 +3,8 @@
 -- module is only loaded the first time one of them fires).
 
 -- Filetypes that don't get the inactive-window dimming below. Named for what it
--- does rather than for 'colorcolumn', which nothing in this config ever sets --
--- the old name is why focus_window()'s comment reads as being about something else.
+-- does rather than for 'colorcolumn' (which the dimming never touched) -- the
+-- old name is why focus_window()'s comment reads as being about something else.
 vim.g.WincentDimBlacklist = { 'diff', 'undotree', 'oil', 'qf' }
 
 -- The namespace dim_namespace() in lua/config/colors.lua fills with grey

@@ -355,6 +355,45 @@ function M.plaintext()
 	vim.api.nvim_create_autocmd('BufWinLeave', { group = group, buffer = buf, callback = function() vim.fn.clearmatches() end })
 end
 
+-- 'formatexpr' for markdown (set in after/ftplugin/markdown.lua): auto-wrap
+-- prose at 'textwidth', but not the blocks where a hard break changes meaning.
+-- A wrapped `excerpt:` lands at column 0, a wrapped shell command becomes two
+-- commands, and a wrapped table row or heading stops being one.
+--
+-- Nvim evaluates this for gq and when typing past 'textwidth'. Non-zero means
+-- "use the built-in formatting"; zero means "handled" (here, by doing
+-- nothing), so the character goes in and the line runs long. Only auto-wrap is
+-- guarded: gq is deliberate, so it always formats.
+--
+-- The line is reparsed first because get_node() reads the last parsed tree,
+-- and the highlighter parses asynchronously, so mid-insert it can lag the
+-- buffer. This only runs on the keystroke that crosses the limit.
+local unwrappable = {
+	minus_metadata = true, plus_metadata = true,
+	fenced_code_block = true, indented_code_block = true,
+	pipe_table = true, html_block = true, atx_heading = true,
+}
+
+function M.markdown_formatexpr()
+	if not vim.fn.mode():match('^[iR]') then
+		return 1
+	end
+	local parser = vim.treesitter.get_parser(0, 'markdown', { error = false })
+	if not parser then
+		return 1 -- No parser installed: plain auto-wrap, as if this weren't set.
+	end
+	local row = vim.v.lnum - 1
+	parser:parse({ row, row + 1 })
+	local node = vim.treesitter.get_node({ pos = { row, 0 }, ignore_injections = true })
+	while node do
+		if unwrappable[node:type()] then
+			return 0
+		end
+		node = node:parent()
+	end
+	return 1
+end
+
 -- Custom fold summary line, used via 'foldtext' (see lua/config/options.lua)
 local middot = '·'
 local raquo = '»'
