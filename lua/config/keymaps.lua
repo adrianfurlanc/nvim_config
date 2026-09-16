@@ -237,6 +237,13 @@ map('x', 'Q', ':normal @q<CR>', { desc = 'Run macro q over selection' })
 map('x', '<C-Up>', ":<C-u>lua require('mappings.visual').move_up()<CR>", { silent = true })
 map('x', '<C-Down>', ":<C-u>lua require('mappings.visual').move_down()<CR>", { silent = true })
 
+-- SearchLink the selection: it goes to the searchlink CLI and comes back as
+-- Markdown links, in the background (lua/searchlink.lua). The leading ':'
+-- rather than <Cmd> is deliberate, as for the line movers above: it ends
+-- Visual mode, which is what sets '< and '>.
+map('x', '<Leader>k', ":<C-u>lua require('searchlink').selection()<CR>",
+	{ silent = true, desc = 'SearchLink the selection' })
+
 -- Split navigation from visual mode
 map('x', '<C-h>', '<C-w>h')
 map('x', '<C-j>', '<C-w>j')
